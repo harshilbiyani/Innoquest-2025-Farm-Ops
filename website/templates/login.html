@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='agriculture-chatbot-styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <title>Login - Farm Ops AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <style>
+    /* Reset margin/padding */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Poppins', sans-serif;
+      color: #e8ff5a;
+      overflow-x: hidden;
+    }
+
+    /* Background with video */
+    #bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    body {
+      background: url('{{ url_for('static', filename='images/landing-bg.jpg') }}') no-repeat center center/cover;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Poppins', sans-serif;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.02);
+      background-image: 
+        radial-gradient(circle at 25% 25%, rgba(76, 175, 80, 0.04) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(232, 255, 90, 0.04) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Header */
+    header {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+    }
+
+    header .logo img {
+      height: 80px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    nav {
+      display: flex;
+      gap: 10px;
+    }
+
+    nav button {
+      text-decoration: none;
+      color: #e8ff5a;
+      font-weight: bold;
+      padding: 10px 22px;
+      border-radius: 20px;
+      border: 2px solid #e8ff5a;
+      background: transparent;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    nav button:hover {
+      background: #e8ff5a;
+      color: #222;
+      box-shadow: 0 0 12px #e8ff5a, 0 0 8px #2e7d32;
+      transform: scale(1.05);
+    }
+
+    /* Main login container */
+    .login-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Glassmorphism login card */
+    .login-glass-card {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      box-shadow: 
+        0 20px 40px 0 rgba(31, 38, 135, 0.12),
+        0 8px 16px 0 rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px) saturate(120%);
+      -webkit-backdrop-filter: blur(20px) saturate(120%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 60px 50px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      position: relative;
+      overflow: visible;
+      z-index: 10;
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .login-glass-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 
+        0 30px 50px 0 rgba(31, 38, 135, 0.18),
+        0 12px 24px 0 rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .login-glass-card::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      right: -1px;
+      bottom: -1px;
+      background: linear-gradient(135deg, rgba(232, 255, 90, 0.3), rgba(76, 175, 80, 0.2), rgba(46, 125, 50, 0.1));
+      border-radius: 25px;
+      z-index: -1;
+      opacity: 0.3;
+      animation: borderGlow 3s ease-in-out infinite alternate;
+    }
+
+    /* Title with animation */
+    .login-title {
+      font-size: 3.2rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+      color: #15b806;
+      letter-spacing: 1px;
+      text-shadow: 0 4px 20px rgba(232, 255, 90, 0.25);
+      opacity: 0;
+      animation: fadeUpSoft 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation-delay: 0.3s;
+      position: relative;
+      z-index: 15;
+      line-height: 1.1;
+    }
+
+    .title-highlight {
+      color: #e8ff5a;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 9px #e8ff5a7a;
+      padding: 0 0.25rem;
+    }
+
+    .title-gradient {
+      display: inline-block;
+      font-weight: inherit;
+      font-size: inherit;
+      background: linear-gradient(92deg, #e8ff5a 18%, #43a047 48%, #5aedc7 80%);
+      background-size: 400% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
+      padding: 0 6px;
+      animation: shimmerSmooth 3.2s linear infinite alternate;
+    }
+
+    /* Removed title-icon styles as icon is no longer used */
+
+    @keyframes shimmerSmooth {
+      0%   {background-position: 0% 50%;}
+      100% {background-position: 100% 50%;}
+    }
+
+    @keyframes pulseIcon {
+      0%   {transform: scale(1);}
+      80%  {transform: scale(1.14);}
+      100% {transform: scale(0.93);}
+    }
+
+    .login-subtitle {
+      font-size: 1rem;
+      color: #e8ff5a;
+      margin-bottom: 40px;
+      opacity: 0;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      line-height: 1.4;
+      text-shadow: 0 2px 8px rgba(232, 255, 90, 0.3);
+      animation: fadeUpSoft 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation-delay: 0.5s;
+    }
+
+    /* Form styling */
+    .login-form {
+      opacity: 0;
+      animation: fadeUpSoft 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation-delay: 0.7s
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #e8ff5a;
+      font-size: 1rem;
+      text-shadow: 0 2px 6px rgba(232, 255, 90, 0.3);
+    }
+
+    .phone-input-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      overflow: hidden;
+    }
+
+    .phone-input-container:focus-within {
+      border-color: rgba(76, 175, 80, 0.4);
+      box-shadow: 0 8px 24px rgba(76, 175, 80, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .country-code-fixed {
+      background: transparent;
+      padding: 18px 16px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #2e7d32;
+      min-width: 60px;
+      border-right: 1px solid rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .phone-input {
+      flex: 1;
+      padding: 18px 16px;
+      border: none;
+      font-size: 16px;
+      background: transparent;
+      color: #333;
+      transition: all 0.3s ease;
+    }
+
+    .phone-input:focus {
+      outline: none;
+      border-color: #66bb6a;
+      box-shadow: 0 0 10px rgba(102, 187, 106, 0.3);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .phone-input::placeholder {
+      color: #666;
+    }
+
+    /* Login button */
+    .login-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+      color: white;
+      padding: 20px 24px;
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      margin-top: 20px;
+      text-transform: none;
+      letter-spacing: 0.5px;
+      box-shadow: 0 8px 24px rgba(46, 125, 50, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-btn:hover {
+      background: linear-gradient(135deg, #45a049 0%, #1b5e20 100%);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(46, 125, 50, 0.35);
+    }
+
+    .login-btn:active {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
+    }
+
+    /* Additional options */
+    .login-options {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(232, 255, 90, 0.3);
+      opacity: 0;
+      animation: fadeUpSoft 1.2s cubic-bezier(.42, 0, .58, 1) forwards;
+      animation-delay: 0.8s;
+    }
+
+    .back-link {
+      display: inline-block;
+      color: #2e7d32;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: rgba(232, 255, 90, 0.2);
+      transition: all 0.2s ease;
+      margin-top: 15px;
+    }
+
+    .back-link:hover {
+      background: rgba(232, 255, 90, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* Footer */
+    footer {
+      background: rgba(0, 0, 0, 0.85);
+      color: #e8ff5a;
+      font-size: 14px;
+      padding: 10px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+      height: 60px;
+    }
+
+    footer .left,
+    footer .right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Animations */
+    @keyframes fadeUpSoft {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes borderGlow {
+      0% { opacity: 0.2; }
+      100% { opacity: 0.4; }
+    }
+
+    /* Responsive design */
+    @media (max-width: 992px) {
+      header .logo img {
+        height: 65px;
+      }
+      
+      .login-glass-card {
+        padding: 40px 30px;
+        margin: 0 20px;
+      }
+      
+      .login-title {
+        font-size: 2.4rem;
+      }
+    }
+
+    @media (max-width: 600px) {
+      header {
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      header .logo img {
+        height: 50px;
+      }
+      
+      nav {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      
+      nav button {
+        padding: 8px 16px;
+        font-size: 14px;
+      }
+      
+      .login-glass-card {
+        padding: 30px 25px;
+        margin: 0 15px;
+        max-width: none;
+      }
+      
+      .login-title {
+        font-size: 2rem;
+      }
+      
+      .country-code-fixed {
+        min-width: 50px;
+        padding: 12px 8px;
+        font-size: 14px;
+      }
+      
+      .phone-input {
+        padding: 12px;
+        font-size: 14px;
+      }
+      
+      .login-btn {
+        padding: 14px 20px;
+        font-size: 16px;
+      }
+      
+      footer {
+        padding: 10px 20px;
+        flex-direction: column;
+        height: auto;
+        gap: 5px;
+      }
+    }
+
+    /* Input validation states */
+    .phone-input.valid {
+      border-color: #4caf50;
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+    }
+
+    .phone-input.invalid {
+      border-color: #f44336;
+      box-shadow: 0 0 8px rgba(244, 67, 54, 0.3);
+    }
+
+    .error-message {
+      color: #f44336;
+      font-size: 14px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .success-message {
+      color: #4caf50;
+      font-size: 14px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    /* Flash message styles */
+    .flash-messages {
+      margin-bottom: 20px;
+    }
+
+    .flash-message {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .flash-error {
+      background: rgba(244, 67, 54, 0.1);
+      border: 1px solid rgba(244, 67, 54, 0.3);
+      color: #d32f2f;
+    }
+
+    .flash-success {
+      background: rgba(232, 255, 90, 0.15);
+      border: 1px solid rgba(232, 255, 90, 0.4);
+      color: #e8ff5a;
+      text-shadow: 0 1px 3px rgba(232, 255, 90, 0.2);
+    }
+
+    .flash-info {
+      background: rgba(33, 150, 243, 0.1);
+      border: 1px solid rgba(33, 150, 243, 0.3);
+      color: #1976d2;
+    }
+
+    /* Clean text styling */
+    .login-info-text {
+      color: #e8ff5a;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.5;
+      margin-bottom: 12px;
+      text-shadow: 0 2px 6px rgba(232, 255, 90, 0.25);
+      opacity: 0.95;
+    }
+
+    .login-info-text:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Already logged in notification styling */
+    .already-logged-in {
+      background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(139, 195, 74, 0.1));
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      text-align: center;
+      backdrop-filter: blur(5px);
+    }
+
+    .already-logged-in p {
+      margin: 5px 0;
+      color: #2e7d32;
+      font-weight: 500;
+    }
+
+    .main-link, .logout-link {
+      color: #1976d2;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    .main-link:hover, .logout-link:hover {
+      color: #0d47a1;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <img src="{{ url_for('static', filename='images/farmops_logo.png') }}" alt="FarmOps Logo">
+    </div>
+    <nav>
+      <button onclick="window.location.href='/'">HOME</button>
+      <button onclick="window.location.href='/#about'">ABOUT US</button>
+      <button onclick="window.location.href='/features'">SOLUTIONS</button>
+      <button onclick="window.location.href='/feedback'">FEEDBACK</button>
+    </nav>
+  </header>
+
+  <!-- Main login container -->
+  <div class="login-container">
+    <div class="login-glass-card">
+      <h1 class="login-title">
+        <span class="title-gradient">Farm-Ops</span>
+      </h1>
+      <p class="login-subtitle">Enter your phone number to access your Farm Ops account</p>
+
+      <!-- Already logged in notification -->
+      {% if current_user %}
+        <div class="already-logged-in">
+          <p>You're already logged in as <strong>{{ current_user }}</strong></p>
+          <p><a href="/main" class="main-link">Go to Dashboard</a> or <a href="/logout" class="logout-link">Logout</a></p>
+        </div>
+      {% endif %}
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-messages">
+            {% for category, message in messages %}
+              <div class="flash-message flash-{{ category }}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form class="login-form" id="loginForm" method="POST" action="/login">
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <div class="phone-input-container">
+            <span class="country-code-fixed">+91</span>
+            <input type="hidden" name="country_code" value="+91">
+            <input 
+              type="tel" 
+              class="phone-input" 
+              id="phone" 
+              name="phone" 
+              placeholder="Enter your 10-digit phone number"
+              maxlength="10"
+              pattern="[0-9]{10}"
+              required
+            >
+          </div>
+          <div class="error-message" id="errorMessage"></div>
+          <div class="success-message" id="successMessage"></div>
+        </div>
+
+        <button type="submit" class="login-btn" id="loginBtn">
+          Login to Farm Ops
+        </button>
+
+        <div class="login-options">
+          <p class="login-info-text">
+            New to Farm Ops? Your account will be created automatically.
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="left"><span>farmops@gmail.com</span></div>
+    <div class="right"><span>+91 1234567890</span></div>
+  </footer>
+
+  <!-- Chatbot Widget (initially hidden) -->
+  <div class="agri-chatbot-widget" id="chatbot" style="display: none;">
+    <div class="chatbot-header">
+      <div class="bot-icon">
+        <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot Icon">
+      </div>
+      <div class="bot-info">
+        <h3>AgriBot AI</h3>
+        <p>Your farming assistant</p>
+      </div>
+      <div class="status-indicator"></div>
+      <button class="minimize-btn" onclick="toggleChatbot()">−</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="quick-suggestions">
+      <button class="suggestion-btn">Crop rotation</button>
+      <button class="suggestion-btn">Pest control</button>
+      <button class="suggestion-btn">Weather forecast</button>
+    </div>
+    <div class="chat-input-area">
+      <div class="input-container">
+        <input type="text" class="chat-input" placeholder="Ask about farming, crops, weather..." id="messageInput">
+        <button class="send-button" onclick="sendMessage()"></button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Toggle Button (initially visible) -->
+  <button class="chatbot-toggle" id="chatbotToggle" onclick="toggleChatbot()" style="display: flex;">
+    <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot">
+  </button>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const phoneInput = document.getElementById('phone');
+      const loginBtn = document.getElementById('loginBtn');
+      const loginForm = document.getElementById('loginForm');
+      const errorMessage = document.getElementById('errorMessage');
+      const successMessage = document.getElementById('successMessage');
+
+      // Phone number validation
+      function validatePhoneNumber(phoneNumber) {
+        // Remove any non-digit characters
+        const cleanPhone = phoneNumber.replace(/\D/g, '');
+        
+        // Validate Indian mobile number (starts with 6,7,8,9 and has 10 digits)
+        return /^[6-9]\d{9}$/.test(cleanPhone);
+      }
+
+      // Real-time validation
+      phoneInput.addEventListener('input', function() {
+        const phoneNumber = this.value;
+        
+        // Remove any non-digit characters as user types
+        this.value = phoneNumber.replace(/\D/g, '');
+        
+        if (this.value.length > 0) {
+          if (validatePhoneNumber(this.value)) {
+            this.classList.remove('invalid');
+            this.classList.add('valid');
+            errorMessage.style.display = 'none';
+            successMessage.textContent = 'Valid Indian mobile number';
+            successMessage.style.display = 'block';
+          } else {
+            this.classList.remove('valid');
+            this.classList.add('invalid');
+            successMessage.style.display = 'none';
+            errorMessage.textContent = 'Please enter a valid 10-digit mobile number starting with 6,7,8 or 9';
+            errorMessage.style.display = 'block';
+          }
+        } else {
+          this.classList.remove('valid', 'invalid');
+          errorMessage.style.display = 'none';
+          successMessage.style.display = 'none';
+        }
+      });
+
+      // Country code change handler
+      countryCode.addEventListener('change', function() {
+        // Clear validation when country code changes
+        phoneInput.classList.remove('valid', 'invalid');
+        errorMessage.style.display = 'none';
+        successMessage.style.display = 'none';
+        
+        // Update placeholder based on country
+        const placeholders = {
+          '+91': 'Enter your 10-digit phone number',
+          '+1': 'Enter your 10-digit phone number',
+          '+44': 'Enter your phone number',
+          '+86': 'Enter your 11-digit phone number',
+          '+81': 'Enter your phone number'
+        };
+        phoneInput.placeholder = placeholders[this.value] || 'Enter your phone number';
+        
+        // Revalidate if there's already input
+        if (phoneInput.value.length > 0) {
+          phoneInput.dispatchEvent(new Event('input'));
+        }
+      });
+
+      // Form submission
+      loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const phoneNumber = phoneInput.value;
+        
+        if (!validatePhoneNumber(phoneNumber)) {
+          errorMessage.textContent = 'Please enter a valid 10-digit mobile number starting with 6,7,8 or 9';
+          errorMessage.style.display = 'block';
+          successMessage.style.display = 'none';
+          phoneInput.classList.add('invalid');
+          return;
+        }
+        
+        // Show loading state
+        loginBtn.innerHTML = '<span style="display: inline-flex; align-items: center; gap: 8px;"><span class="spinner"></span>Logging in...</span>';
+        loginBtn.disabled = true;
+        
+        // Submit the form - let Flask handle the validation and redirect
+        this.submit();
+      });
+
+      // Add spinner CSS
+      const style = document.createElement('style');
+      style.textContent = `
+        .spinner {
+          width: 16px;
+          height: 16px;
+          border: 2px solid rgba(255,255,255,0.3);
+          border-top: 2px solid white;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `;
+      document.head.appendChild(style);
+    });
+  </script>
+  
+  <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+</body>
+</html>

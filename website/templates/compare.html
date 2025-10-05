@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="{{ url_for('static', filename='agriculture-chatbot-styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crops Comparison</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+
+    .dashboard-card {
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      color: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .top-card { background-color: #28a745; }
+    .bottom-card { background-color: #dc3545; }
+    .summary-card { background-color: #6c757d; }
+
+    .dashboard-section h4 { margin-bottom: 8px; font-size: 1.1rem; color: #333; }
+    .dashboard-list { list-style: none; padding: 0; margin: 0; }
+    .dashboard-list li {
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+    }
+    .dashboard-list li:last-child { border-bottom: none; }
+
+    .tab-btn {
+      padding: 6px 12px;
+      border: none;
+      background: #ddd;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    .tab-btn.active { background: #007BFF; color: white; }
+
+    #dashboard {
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      overflow-y: auto;
+      max-height: 450px;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+    #dashboard.fade-out {
+      opacity: 0;
+    }
+
+  </style>
+</head>
+<body>
+
+<h2>Crop Comparison</h2>
+
+<div style="display: flex; gap: 5px; margin-bottom: 10px;">
+  <button class="tab-btn active" onclick="switchView('cycle')">Cycle</button>
+  <button class="tab-btn" onclick="switchView('yearly')">Yearly</button>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+  <h3 id="chartTitle">Cycle Performance</h3>
+  <select id="parameterSelect">
+    <option value="all">All (Grouped)</option>
+    <option value="yield">Yield</option>
+    <option value="price">Price</option>
+    <option value="profit">Net Profit</option>
+  </select>
+</div>
+
+<div style="display: flex; gap: 20px;">
+  <div style="flex: 3;">
+    <canvas id="mainChart" width="900" height="450"></canvas>
+  </div>
+  <div style="flex: 1;">
+    <div id="dashboard">Select a parameter to see insights.</div>
+  </div>
+</div>
+
+
+
+<script>
+const cropLabels = [
+  'Sugarcane', 'Cotton', 'Soyabean', 'Rice', 'Jowar',
+  'Tur', 'Wheat', 'Groundnut', 'Onion', 'Tomato', 'Potato', 'Garlic'
+];
+const cropDuration = [12, 6, 4, 4, 4, 5, 5, 4, 4, 4, 4, 5];
+
+const yieldData = [80, 21.5, 15, 50, 25, 12.5, 45, 20, 250, 300, 30, 80];
+const priceData = [3200, 6850, 5250, 2400, 2250, 7000, 2200, 5500, 1200, 800, 1550, 3000];
+const profitData = [125000, 85000, 50000, 67500, 32500, 60000, 55000, 65000, 200000, 145000, 330000, 190000];
+
+function getYearlyData() {
+  return {
+    yearlyYield: yieldData.map((y, i) => y * (12 / cropDuration[i])),
+    yearlyPrice: [...priceData],
+    yearlyProfit: profitData.map((p, i) => p * (12 / cropDuration[i]))
+  };
+}
+
+function normalizeData(dataArray) {
+  const min = Math.min(...dataArray);
+  const max = Math.max(...dataArray);
+  return dataArray.map(val => ((val - min) / (max - min)) * 100);
+}
+
+function getInsightsHTML(data, label) {
+  const crops = cropLabels.map((crop, i) => ({ crop, value: data[i] }));
+  crops.sort((a, b) => b.value - a.value);
+  const top3 = crops.slice(0, 3);
+  const bottom3 = crops.slice(-3).reverse();
+  const avg = (data.reduce((a, b) => a + b, 0) / data.length).toFixed(2);
+  const median = (() => {
+    const sorted = [...data].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 !== 0 ? sorted[mid] : ((sorted[mid - 1] + sorted[mid]) / 2).toFixed(2);
+  })();
+
+  return `
+    <div class="dashboard-section">
+      <h4>${label}</h4>
+      <div class="dashboard-card top-card">
+        <strong>Top 3:</strong>
+        <ul class="dashboard-list">${top3.map(c => `<li>${c.crop}: ${c.value}</li>`).join('')}</ul>
+      </div>
+      <div class="dashboard-card bottom-card">
+        <strong>Bottom 3:</strong>
+        <ul class="dashboard-list">${bottom3.map(c => `<li>${c.crop}: ${c.value}</li>`).join('')}</ul>
+      </div>
+      <div class="dashboard-card summary-card">
+        <strong>Average:</strong> ${avg}<br>
+        <strong>Median:</strong> ${median}
+      </div>
+    </div>`;
+}
+
+let currentView = 'cycle';
+let chartInstance;
+
+function createChart(type) {
+  const { yearlyYield, yearlyPrice, yearlyProfit } = getYearlyData();
+
+  let yData, pData, prData;
+  if (currentView === 'cycle') {
+    yData = yieldData;
+    pData = priceData;
+    prData = profitData;
+  } else {
+    yData = yearlyYield;
+    pData = yearlyPrice;
+    prData = yearlyProfit;
+  }
+
+  let datasets = [];
+  if (type === 'all') {
+    datasets = [
+      { label: 'Yield (normalized)', data: normalizeData(yData), backgroundColor: 'rgba(75, 192, 192, 0.6)' },
+      { label: 'Price (normalized)', data: normalizeData(pData), backgroundColor: 'rgba(255, 159, 64, 0.6)' },
+      { label: 'Net Profit (normalized)', data: normalizeData(prData), backgroundColor: 'rgba(153, 102, 255, 0.6)' }
+    ];
+  } else {
+    let d = [], label = '', color = '';
+    if (type === 'yield') { label = 'Yield'; d = yData; color = 'rgba(75, 192, 192, 0.6)'; }
+    else if (type === 'price') { label = 'Price'; d = pData; color = 'rgba(255, 159, 64, 0.6)'; }
+    else if (type === 'profit') { label = 'Net Profit'; d = prData; color = 'rgba(153, 102, 255, 0.6)'; }
+    datasets.push({ label, data: d, backgroundColor: color });
+  }
+
+  if (!chartInstance) {
+    chartInstance = new Chart(document.getElementById('mainChart'), {
+      type: 'bar',
+      data: { labels: cropLabels, datasets },
+      options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
+    });
+  } else {
+    chartInstance.data.datasets = datasets;
+    chartInstance.update({ duration: 800, easing: 'easeInOutCubic' });
+  }
+
+const dashboardEl = document.getElementById('dashboard');
+dashboardEl.classList.add('fade-out');
+
+    setTimeout(() => {
+      if (type === 'yield') dashboardEl.innerHTML = getInsightsHTML(yData, 'Yield (tonnes/ha)');
+      else if (type === 'price') dashboardEl.innerHTML = getInsightsHTML(pData, 'Price (₹/tonne)');
+      else if (type === 'profit') dashboardEl.innerHTML = getInsightsHTML(prData, 'Net Profit (₹/ha)');
+      else dashboardEl.innerHTML =
+        getInsightsHTML(yData, 'Yield (tonnes/ha)') +
+        getInsightsHTML(pData, 'Price (₹/tonne)') +
+        getInsightsHTML(prData, 'Net Profit (₹/ha)');
+
+      dashboardEl.classList.remove('fade-out');
+    }, 350);
+
+}
+
+function switchView(view) {
+  currentView = view;
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  if (view === 'cycle') {
+    document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+    document.getElementById('chartTitle').textContent = 'Cycle Performance';
+  } else {
+    document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+    document.getElementById('chartTitle').textContent = 'Yearly Performance';
+  }
+  createChart(document.getElementById('parameterSelect').value);
+}
+
+document.getElementById('parameterSelect').addEventListener('change', function() {
+  createChart(this.value);
+});
+
+createChart('all');
+
+
+</script>
+<!-- Chatbot Widget (initially hidden) -->
+<div class="agri-chatbot-widget" id="chatbot" style="display: none;">
+    <div class="chatbot-header">
+        <div class="bot-icon">
+          <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot Icon">
+        </div>
+        <div class="bot-info">
+            <h3>AgriBot AI</h3>
+            <p>Your farming assistant</p>
+        </div>
+        <div class="status-indicator"></div>
+        <button class="minimize-btn" onclick="toggleChatbot()">−</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="quick-suggestions">
+        <button class="suggestion-btn">Crop rotation</button>
+        <button class="suggestion-btn">Pest control</button>
+        <button class="suggestion-btn">Weather forecast</button>
+    </div>
+    <div class="chat-input-area">
+        <div class="input-container">
+            <input type="text" class="chat-input" placeholder="Ask about farming, crops, weather..." id="messageInput">
+            <button class="send-button" onclick="sendMessage()"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Toggle Button (initially visible) -->
+<button class="chatbot-toggle" id="chatbotToggle" onclick="toggleChatbot()" style="display: flex;">
+  <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot">
+</button>
+
+<script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+
+</body>
+</html>

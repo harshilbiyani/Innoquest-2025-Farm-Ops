@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agriculture Experts Directory</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='agriculture-chatbot-styles.css') }}">
+  <style>
+    html, body {
+      height: 100%;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: url('{{ url_for('static', filename='images/landing-bg.jpg') }}') no-repeat center center/cover;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: #e8ff5a;
+      min-height: 100vh;
+      width: 100vw;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    /* Glassmorphism card wrapper */
+    .glass-card {
+      max-width: 1100px;
+      margin: 48px auto 48px auto;
+      padding: 32px 24px 24px 24px;
+      border-radius: 32px;
+      background: rgba(255,255,255,0.13);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      border: 1.5px solid rgba(232,255,90,0.18);
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    header {
+      background: rgba(44, 62, 80, 0.65);
+      color: #e8ff5a;
+      text-align: center;
+      padding: 40px 20px 30px 20px;
+      border-radius: 24px 24px 32px 32px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.13);
+      margin-bottom: 18px;
+      position: relative;
+      z-index: 1;
+    }
+    .animated-title {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 2.3rem;
+      font-weight: 900;
+      text-align: center;
+      margin: 1.5rem 0 1.6rem 0;
+      letter-spacing: 2.2px;
+      line-height: 1.18;
+      color: #1c361b;
+      text-shadow: 0 5px 18px #a5ff4e55, 0px 1px 1px #3e892b17;
+      background: linear-gradient(92deg, #e8ff5a 18%, #43a047 48%, #5aedc7 80%);
+      background-size: 400% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
+      animation: shimmerSmooth 3.2s linear infinite alternate;
+      display: inline-block;
+    }
+    @keyframes shimmerSmooth {
+      0%   {background-position: 0% 50%;}
+      100% {background-position: 100% 50%;}
+    }
+    header p {
+      font-size: 1.2rem;
+      color: #fffde4;
+      text-shadow: 0 1px 8px #222;
+      margin-top: 0.5rem;
+      margin-bottom: 0;
+      opacity: 0.93;
+    }
+    .controls {
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+      gap: 24px;
+      background: none;
+      padding: 0;
+      margin: 30px auto 0 auto;
+      border-radius: 0;
+      max-width: 900px;
+      box-shadow: none;
+      color: inherit;
+      position: relative;
+      z-index: 1;
+    }
+    .control-card {
+      background: rgba(30,30,30,0.65);
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.13);
+      padding: 15px 20px;
+      min-width: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      color: #e8ff5a;
+    }
+    .control-card label, .control-card select {
+      color: #e8ff5a;
+      font-weight: bold;
+    }
+    .control-card select {
+      background: #222;
+      border: 1px solid #e8ff5a;
+      border-radius: 6px;
+      padding: 4px 10px;
+      color: #e8ff5a;
+      font-size: 1rem;
+      margin-left: 6px;
+      margin-top: 8px;
+    }
+    .expert-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 25px;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px 0 0 0;
+      position: relative;
+      z-index: 1;
+    }
+    .card {
+      background: rgba(34,34,34,0.93);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      color: #e8ff5a;
+      border: 1.5px solid #4caf50;
+      backdrop-filter: blur(6px) saturate(120%);
+      -webkit-backdrop-filter: blur(6px) saturate(120%);
+    }
+    .card:hover {
+      transform: translateY(-5px) scale(1.03);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.28);
+      border-color: #e8ff5a;
+      background: rgba(44,62,80,0.98);
+    }
+    .card h3 {
+      color: #e8ff5a;
+      margin-bottom: 8px;
+      font-size: 1.35rem;
+      letter-spacing: 0.5px;
+    }
+    .rating {
+      color: #FFD700;
+      font-weight: bold;
+      text-shadow: 0 1px 4px #222;
+    }
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      overflow: auto;
+      background: rgba(0, 0, 0, 0.7);
+    }
+    .modal-content {
+      background: rgba(24,31,27,0.95);
+      margin: 7% auto;
+      padding: 30px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+      position: relative;
+      animation: fadeIn 0.3s ease;
+      color: #e8ff5a;
+      border: 2px solid #4caf50;
+      backdrop-filter: blur(8px) saturate(120%);
+      -webkit-backdrop-filter: blur(8px) saturate(120%);
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(-20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    .close {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #FFD700;
+      cursor: pointer;
+      text-shadow: 0 1px 6px #222;
+    }
+    .close:hover {
+      color: #fff;
+    }
+    .modal img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 15px;
+      border: 3px solid #4caf50;
+      box-shadow: 0 2px 12px #222;
+    }
+    .modal h2 {
+      margin: 10px 0;
+      color: #e8ff5a;
+      text-shadow: 0 1px 8px #222;
+    }
+    .modal p {
+      margin: 8px 0;
+      color: #fffde4;
+    }
+    .book-btn {
+      display: inline-block;
+      margin-top: 18px;
+      padding: 10px 22px;
+      background: #43a047;
+      color: #fffde4;
+      font-weight: bold;
+      font-size: 1.08rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+      box-shadow: 0 2px 8px #43a04733;
+    }
+    .book-btn:hover {
+      background: #388e3c;
+      color: #e8ff5a;
+      box-shadow: 0 4px 16px #43a04744;
+    }
+    /* Responsive */
+    @media (max-width: 900px) {
+      .glass-card { padding: 10px 2vw; }
+      header { padding: 30px 10px 20px 10px; }
+      .animated-title { font-size: 1.5rem; }
+      .controls { flex-direction: column; gap: 10px; align-items: stretch; }
+      .control-card { min-width: 0; width: 100%; }
+      .expert-cards { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 540px) {
+      .glass-card { padding: 4vw 2vw; }
+      .controls { padding: 10px 6px; }
+      .expert-cards { padding: 10px 0 0 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="glass-card">
+    <header>
+      <span class="animated-title">Agriculture Expert Finder</span>
+      <p>Find trusted experts in soil, crops, irrigation & more</p>
+    </header>
+    <!-- Controls -->
+    <div class="controls">
+      <div class="control-card">
+        <label for="sort">Sort by: </label>
+        <select id="sort">
+          <option value="rating">Highest Rating</option>
+          <option value="speciality">Speciality</option>
+          <option value="name">Name (A-Z)</option>
+        </select>
+      </div>
+      <div class="control-card">
+        <label for="filter">Filter by Speciality: </label>
+        <select id="filter">
+          <option value="all">All</option>
+          <option value="Soil Fertility & Crop Nutrition">Soil Fertility & Crop Nutrition</option>
+          <option value="Pest & Disease Management">Pest & Disease Management</option>
+          <option value="Irrigation & Water Management">Irrigation & Water Management</option>
+        </select>
+      </div>
+    </div>
+    <!-- Expert Cards -->
+    <div class="expert-cards" id="expert-list">
+
+      <div class="card" 
+        data-name="Dr. Aditya Rajput"
+        data-speciality="Soil Fertility & Crop Nutrition"
+        data-rating="5.0"
+        data-count="120"
+        data-contact="aditya@agri.com | +91 9876543210"
+        data-experience="15+ years"
+        data-photo="{{ url_for('static', filename='images/pfp.jpg') }}"
+        data-bio="Expert in soil fertility and crop nutrition with over 15 years of agricultural consultancy experience.">
+        <h3>Dr. Aditya Rajput</h3>
+        <p><strong>Speciality:</strong> Soil Fertility & Crop Nutrition</p>
+        <p class="rating">⭐⭐⭐⭐⭐ (5.0 / 120 ratings)</p>
+        <p><strong>Experience:</strong> 15+ years</p>
+      </div>
+
+      <div class="card" 
+        data-name="Dr. Anjali Mehta"
+        data-speciality="Pest & Disease Management"
+        data-rating="4.7"
+        data-count="90"
+        data-contact="anjali@agri.com | +91 9123456780"
+        data-experience="12+ years"
+        data-photo="{{ url_for('static', filename='images/pfp.jpg') }}"
+        data-bio="Specialist in pest and disease management helping farmers protect their crops effectively.">
+        <h3>Dr. Anjali Mehta</h3>
+        <p><strong>Speciality:</strong> Pest & Disease Management</p>
+        <p class="rating">⭐⭐⭐⭐☆ (4.7 / 90 ratings)</p>
+        <p><strong>Experience:</strong> 12+ years</p>
+      </div>
+
+      <div class="card" 
+        data-name="Dr. Vivek Sharma"
+        data-speciality="Irrigation & Water Management"
+        data-rating="4.5"
+        data-count="75"
+        data-contact="vivek@agri.com | +91 9988776655"
+        data-experience="10+ years"
+        data-photo="{{ url_for('static', filename='images/pfp.jpg') }}"
+        data-bio="Irrigation specialist with 10 years of expertise in water resource management and crop efficiency.">
+        <h3>Dr. Vivek Sharma</h3>
+        <p><strong>Speciality:</strong> Irrigation & Water Management</p>
+        <p class="rating">⭐⭐⭐⭐☆ (4.5 / 75 ratings)</p>
+        <p><strong>Experience:</strong> 10+ years</p>
+      </div>
+
+    </div>
+    <!-- Modal -->
+    <div class="modal" id="expertModal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <div class="modal-body">
+          <img id="modalPhoto" src="" alt="Expert Photo">
+          <h2 id="modalName"></h2>
+          <p><strong>Speciality:</strong> <span id="modalSpeciality"></span></p>
+          <p><strong>Rating:</strong> <span id="modalRating"></span></p>
+          <p><strong>Experience:</strong> <span id="modalExperience"></span></p>
+          <p><strong>Contact:</strong> <span id="modalContact"></span></p>
+          <p><strong>Bio:</strong> <span id="modalBio"></span></p>
+          <a href="https://forms.gle/kNHEjsjsAjZb78TW9" target="_blank" class="book-btn">Book an Appointment</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const expertList = document.getElementById('expert-list');
+    const sortSelect = document.getElementById('sort');
+    const filterSelect = document.getElementById('filter');
+
+    function sortExperts(criteria) {
+      let experts = Array.from(expertList.children);
+      experts.sort((a, b) => {
+        if (criteria === "rating") {
+          let scoreA = parseFloat(a.dataset.rating) + (parseInt(a.dataset.count) / 1000);
+          let scoreB = parseFloat(b.dataset.rating) + (parseInt(b.dataset.count) / 1000);
+          return scoreB - scoreA;
+        }
+        if (criteria === "name") {
+          return a.dataset.name.localeCompare(b.dataset.name);
+        }
+        if (criteria === "speciality") {
+          return a.dataset.speciality.localeCompare(b.dataset.speciality);
+        }
+      });
+      expertList.innerHTML = "";
+      experts.forEach(expert => expertList.appendChild(expert));
+    }
+
+    function filterExperts(speciality) {
+      let experts = Array.from(expertList.children);
+      experts.forEach(expert => {
+        expert.style.display = (speciality === "all" || expert.dataset.speciality === speciality) ? "block" : "none";
+      });
+    }
+
+    sortSelect.addEventListener("change", (e) => sortExperts(e.target.value));
+    filterSelect.addEventListener("change", (e) => filterExperts(e.target.value));
+    sortExperts("rating");
+
+    // Modal Logic
+    const modal = document.getElementById("expertModal");
+    const closeBtn = document.querySelector(".close");
+
+    document.querySelectorAll(".card").forEach(card => {
+      card.addEventListener("click", () => {
+        document.getElementById("modalPhoto").src = card.dataset.photo;
+        document.getElementById("modalName").textContent = card.dataset.name;
+        document.getElementById("modalSpeciality").textContent = card.dataset.speciality;
+        document.getElementById("modalRating").textContent = `${card.dataset.rating} (${card.dataset.count} ratings)`;
+        document.getElementById("modalExperience").textContent = card.dataset.experience;
+        document.getElementById("modalContact").textContent = card.dataset.contact;
+        document.getElementById("modalBio").textContent = card.dataset.bio;
+
+        modal.style.display = "block";
+      });
+    });
+
+    closeBtn.onclick = () => { modal.style.display = "none"; };
+    window.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
+  </script>
+
+  <!-- Chatbot Widget (initially hidden) -->
+  <div class="agri-chatbot-widget" id="chatbot" style="display: none;">
+    <div class="chatbot-header">
+      <div class="bot-icon">
+        <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot Icon">
+      </div>
+      <div class="bot-info">
+        <h3>AgriBot AI</h3>
+        <p>Your farming assistant</p>
+      </div>
+      <div class="status-indicator"></div>
+      <button class="minimize-btn" onclick="toggleChatbot()">−</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="quick-suggestions">
+      <button class="suggestion-btn">Crop rotation</button>
+      <button class="suggestion-btn">Pest control</button>
+      <button class="suggestion-btn">Weather forecast</button>
+    </div>
+    <div class="chat-input-area">
+      <div class="input-container">
+        <input type="text" class="chat-input" placeholder="Ask about farming, crops, weather..." id="messageInput">
+        <button class="send-button" onclick="sendMessage()"></button>
+      </div>
+    </div>
+  </div>
+  <!-- Toggle Button (initially visible) -->
+  <button class="chatbot-toggle" id="chatbotToggle" onclick="toggleChatbot()" style="display: flex;">
+    <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot">
+  </button>
+
+  <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+
+</body>
+</html>

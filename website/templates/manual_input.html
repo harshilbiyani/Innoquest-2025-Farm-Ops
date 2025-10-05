@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title data-translate="manual.title">Manual Input</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='agriculture-chatbot-styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <script src="{{ url_for('static', filename='global-translations.js') }}"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html { height: 100%; font-family: 'Poppins', sans-serif; }
+    .bg {
+      background-image: url("{{ url_for('static', filename='images/landing-bg.jpg') }}");
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      min-height: 100vh;
+      padding: 60px 30px;
+      position: relative;
+    }
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 1200px;
+      margin: auto;
+      background-color: rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .standout-heading {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 2.8rem;
+      font-weight: 900;
+      margin: 1.5rem 0 1.6rem 0;
+      text-align: center;
+      letter-spacing: 2.2px;
+      line-height: 1.18;
+      color: #fff;
+      text-shadow: 0 5px 18px #a5ff4e55, 0px 1px 1px #3e892b17;
+      animation: fadeInUpSmooth 1s ease-out forwards;
+      position: relative;
+    }
+    .heading-icon {
+      font-size: 1.7rem;
+      vertical-align: middle;
+    }
+
+    /* Soil Test Booking Popup Styles */
+    .soil-test-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .soil-test-popup.show {
+      display: flex;
+    }
+
+    .popup-content {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(247, 251, 246, 0.98) 100%);
+      border-radius: 20px;
+      padding: 40px 35px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 15px 50px rgba(76, 175, 80, 0.2);
+      border: 2px solid rgba(76, 175, 80, 0.3);
+      position: relative;
+      animation: slideInUp 0.4s ease-out;
+    }
+
+    .popup-header {
+      margin-bottom: 25px;
+    }
+
+    .popup-icon {
+      font-size: 3.5rem;
+      margin-bottom: 15px;
+      color: #4caf50;
+      text-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
+    }
+
+    .popup-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #2e7d32;
+      margin-bottom: 15px;
+      letter-spacing: 0.5px;
+    }
+
+    .popup-subtitle {
+      font-size: 1.1rem;
+      color: #4caf50;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .popup-description {
+      font-size: 1rem;
+      color: #555;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    .popup-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .popup-btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 25px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 150px;
+    }
+
+    .popup-btn-primary {
+      background: linear-gradient(135deg, #4caf50, #66bb6a);
+      color: white;
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    }
+
+    .popup-btn-primary:hover {
+      background: linear-gradient(135deg, #45a049, #5cb85c);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+    }
+
+    .popup-btn-secondary {
+      background: rgba(108, 117, 125, 0.1);
+      color: #6c757d;
+      border: 2px solid rgba(108, 117, 125, 0.2);
+    }
+
+    .popup-btn-secondary:hover {
+      background: rgba(108, 117, 125, 0.2);
+      border-color: rgba(108, 117, 125, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .close-popup {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: #999;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .close-popup:hover {
+      color: #666;
+      transform: rotate(90deg);
+    }
+
+    .popup-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin: 20px 0;
+      text-align: left;
+    }
+
+    .popup-feature {
+      display: flex;
+      align-items: center;
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .popup-feature-icon {
+      color: #4caf50;
+      margin-right: 8px;
+      font-weight: bold;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .popup-content {
+        padding: 30px 25px;
+        margin: 20px;
+      }
+      
+      .popup-title {
+        font-size: 1.5rem;
+      }
+      
+      .popup-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .popup-btn {
+        width: 100%;
+        max-width: 250px;
+      }
+      
+      .popup-features {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+    }
+    .heading-highlight {
+      color: #e8ff5a;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 9px #e8ff5a7a;
+      padding: 0 0.18rem;
+      font-size: inherit;
+      display: inline;
+    }
+    .heading-gradient {
+      display: inline-block;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: inherit;
+      font-weight: inherit;
+      background: linear-gradient(90deg,#e8ff5a 18%, #43a047 48%, #5aedc7 80%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
+      padding: 0 6px;
+      animation: shimmerSmooth 5s linear infinite alternate;
+    }
+    @keyframes shimmerSmooth {
+      0%   {background-position: 0% 50%;}
+      100% {background-position: 100% 50%;}
+    }
+    @keyframes fadeInUpSmooth {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    @keyframes pulseIcon {
+      0%   {transform: scale(1);}
+      80%  {transform: scale(1.13);}
+      100% {transform: scale(0.93);}
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #f0f0f0;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    }
+    select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      font-size: 1rem;
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #333;
+      transition: all 0.3s ease;
+    }
+    select:focus {
+      outline: none;
+      border-color: #e8ff5a;
+      box-shadow: 0 0 0 3px rgba(232, 255, 90, 0.3);
+    }
+    .form-group { margin-bottom: 25px; }
+    .btn {
+      display: block;
+      margin: 40px auto 0;
+      padding: 14px 32px;
+      font-size: 1.1rem;
+      background: linear-gradient(45deg, #e8ff5a, #4caf50);
+      color: #1b2b0a;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .btn:hover {
+      transform: scale(1.05) translateY(-2px);
+      box-shadow: 0 6px 20px rgba(232, 255, 90, 0.4);
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+    }
+    .col { flex: 1 1 300px; }
+  </style>
+</head>
+<body>
+  <div class="bg">
+    <div class="container">
+      <h2 class="standout-heading">
+      <span class="heading-highlight"></span> <span class="heading-gradient" data-translate="manual.heading">Enter Soil and Climate Attributes</span>
+      </h2>
+      <form action="/predict-manual" method="POST">
+        <div class="row">
+          {% for attr, options in attributes.items() %}
+          <div class="col">
+            <div class="form-group">
+              <label for="{{ attr }}">{{ attr.replace('_', ' ') }}</label>
+              <select name="{{ attr }}" id="{{ attr }}" required>
+                <option value="" disabled selected data-translate="manual.select">-- Select --</option>
+                {% for option in options %}
+                  <option value="{{ option }}">{{ option }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <button type="submit" class="btn" data-translate="manual.predict">Predict Crop Suitability</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Soil Test Booking Popup -->
+  <div class="soil-test-popup" id="soilTestPopup">
+    <div class="popup-content">
+      <button class="close-popup" onclick="closeSoilTestPopup()">&times;</button>
+      
+      <div class="popup-header">
+        <div class="popup-icon">🌱</div>
+        <h3 class="popup-title">Book Your Land's Soil Test</h3>
+        <p class="popup-subtitle">with FarmOps</p>
+      </div>
+      
+      <p class="popup-description">
+        Get professional soil analysis to optimize your crop selection and farming strategy. Our experts will test your soil's nutrients, pH levels, and composition.
+      </p>
+      
+      <div class="popup-features">
+        <div class="popup-feature">
+          <span class="popup-feature-icon">✓</span>
+          Comprehensive soil analysis
+        </div>
+        <div class="popup-feature">
+          <span class="popup-feature-icon">✓</span>
+          Expert recommendations
+        </div>
+        <div class="popup-feature">
+          <span class="popup-feature-icon">✓</span>
+          Fast results delivery
+        </div>
+        <div class="popup-feature">
+          <span class="popup-feature-icon">✓</span>
+          Affordable pricing
+        </div>
+      </div>
+      
+      <div class="popup-buttons">
+        <a href="https://forms.gle/hXhmFMqmxAHEckyy5" target="_blank" class="popup-btn popup-btn-primary" onclick="closeSoilTestPopup()">
+          📝 Book Appointment
+        </a>
+        <button class="popup-btn popup-btn-secondary" onclick="closeSoilTestPopup()">
+          Maybe Later
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chatbot Widget (initially hidden) -->
+  <div class="agri-chatbot-widget" id="chatbot" style="display: none;">
+    <div class="chatbot-header">
+      <div class="bot-icon">
+        <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot Icon">
+      </div>
+      <div class="bot-info">
+        <h3>AgriBot AI</h3>
+        <p>Your farming assistant</p>
+      </div>
+      <div class="status-indicator"></div>
+      <button class="minimize-btn" onclick="toggleChatbot()">−</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="quick-suggestions">
+      <button class="suggestion-btn">Crop rotation</button>
+      <button class="suggestion-btn">Pest control</button>
+      <button class="suggestion-btn">Weather forecast</button>
+    </div>
+    <div class="chat-input-area">
+      <div class="input-container">
+        <input type="text" class="chat-input" placeholder="Ask about farming, crops, weather..." id="messageInput">
+        <button class="send-button" onclick="sendMessage()"></button>
+      </div>
+    </div>
+  </div>
+  <!-- Toggle Button (initially visible) -->
+  <button class="chatbot-toggle" id="chatbotToggle" onclick="toggleChatbot()" style="display: flex;">
+    <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot">
+  </button>
+  <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+  <script>
+    // Initialize global translation system for manual input page
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof GlobalTranslationSystem !== 'undefined') {
+        const translationSystem = new GlobalTranslationSystem();
+        translationSystem.initialize();
+        console.log('Global translation system initialized for manual input page');
+      }
+      
+      // Show soil test popup after a delay
+      setTimeout(showSoilTestPopup, 3000); // Show after 3 seconds
+    });
+
+    // Soil Test Popup Functions
+    function showSoilTestPopup() {
+      // Check if popup was already dismissed in this session
+      if (sessionStorage.getItem('soilTestPopupDismissed') === 'true') {
+        return;
+      }
+      
+      const popup = document.getElementById('soilTestPopup');
+      if (popup) {
+        popup.classList.add('show');
+        console.log('🌱 Soil test booking popup displayed');
+      }
+    }
+
+    function closeSoilTestPopup() {
+      const popup = document.getElementById('soilTestPopup');
+      if (popup) {
+        popup.classList.remove('show');
+        // Remember that user dismissed the popup for this session
+        sessionStorage.setItem('soilTestPopupDismissed', 'true');
+        console.log('🌱 Soil test booking popup closed');
+      }
+    }
+
+    // Close popup when clicking outside the content
+    document.addEventListener('click', function(event) {
+      const popup = document.getElementById('soilTestPopup');
+      const popupContent = document.querySelector('.popup-content');
+      
+      if (popup && popup.classList.contains('show')) {
+        if (event.target === popup && !popupContent.contains(event.target)) {
+          closeSoilTestPopup();
+        }
+      }
+    });
+
+    // Close popup with Escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closeSoilTestPopup();
+      }
+    });
+  </script>
+</body>
+</html>

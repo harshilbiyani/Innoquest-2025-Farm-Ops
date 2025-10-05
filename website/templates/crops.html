@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="{{ url_for('static', filename='agriculture-chatbot-styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <meta charset="UTF-8" />
+  <title>Crops Guide</title>
+  <style>
+    body {
+  /* Add background image */
+  background: url('{{ url_for('static', filename='images/landing-bg.jpg') }}') no-repeat center center fixed;
+  background-size: cover;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  /* Remove previous background-color if present */
+}
+
+.fixed-dropdown {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1001;
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#cropSelector {
+  width: 160px;
+  padding: 8px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin: 0;
+}
+
+/* Main Content Area */
+.main {
+  padding: 2rem;
+  margin-left: 200px; /* Optional: remove or tweak if dropdown is not tall */
+}
+
+/* Glassmorphism card for main content */
+.glass-card {
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 18px;
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  margin: 2.5rem auto 2rem auto;
+  padding: 2.5rem 2rem;
+  max-width: 950px;
+  min-width: 320px;
+  width: 90%;
+  color: #e8ff5a;
+}
+
+/* Ensure all text inside glass-card uses the new color */
+.glass-card h1,
+.glass-card h2,
+.glass-card h3,
+.glass-card h4,
+.glass-card h5,
+.glass-card h6,
+.glass-card p,
+.glass-card ul,
+.glass-card li,
+.glass-card th,
+.glass-card td,
+.glass-card label,
+.glass-card span,
+.glass-card div,
+.glass-card a {
+  color: #e8ff5a;
+}
+
+/* Table backgrounds remain for readability */
+.glass-card table {
+  background: rgba(255,255,255,0.85);
+  color: #2c3e50; /* Keep table text dark for contrast */
+}
+.glass-card th, .glass-card td {
+  color: #2c3e50;
+}
+
+/* Table Styling */
+table {
+  width: 50%;
+  max-width: 800px;
+  margin: 2rem auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 2px solid #000000;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+thead th {
+  background: linear-gradient(to right, #a9dfbf, #d4efdf);
+  color: #2c3e50;
+  text-transform: uppercase;
+  font-weight: 1000;
+  padding: 12px 16px;
+  border-bottom: 2px solid #d1d1d1;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+th, td {
+  padding: 12px 16px;
+  text-align: center;
+  font-size: 1rem;
+  border-bottom: 1px solid #eaeaea;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+tbody tr:hover {
+  background-color: #eaf2e3;
+  cursor: pointer;
+}
+
+/* Optional: Crop Card Animations */
+.crop-card {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive Fixes */
+@media (max-width: 768px) {
+  .fixed-dropdown {
+    position: static;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  #cropSelector {
+    width: 90%;
+    max-width: 300px;
+  }
+
+  .main {
+    margin-left: 0;
+    padding: 1rem;
+  }
+
+  table {
+    width: 100%;
+    font-size: 0.9rem;
+  }
+}
+
+/* Animation Keyframes */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Apply animation to visible crop section */
+.crop-card {
+  animation: fadeSlideIn 0.6s ease both;
+  transition: opacity 0.3s ease;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.tabs button {
+  padding: 8px 16px;
+  font-size: 1rem;
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.tabs button:hover {
+  background-color: #d4efdf;
+}
+
+.tabs button.active-tab {
+  background-color: #a9dfbf;
+  font-weight: bold;
+}
+
+.tab-content {
+  animation: fadeSlideIn 0.4s ease;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hide all crop sections by default */
+main section {
+  display: none;
+}
+
+/* Make tables and tab content backgrounds transparent inside glass card */
+.glass-card table {
+  background: rgba(255,255,255,0.85);
+}
+.glass-card .tab-content {
+  background: transparent;
+}
+
+/* Adjust main padding and margin for glass card */
+.main {
+  padding: 0;
+  margin-left: 200px;
+}
+
+@media (max-width: 768px) {
+  .main {
+    margin-left: 0;
+    padding: 0;
+  }
+  .glass-card {
+    padding: 1rem 0.5rem;
+  }
+}
+
+/* Back button styling */
+.back-button {
+  position: absolute;
+  top: 80px;
+  left: 20px;
+  z-index: 1002;
+  background: rgba(247, 251, 246, 0.81);
+  border-radius: 12px;
+  box-shadow: 0 4px 22px rgba(60, 80, 70, 0.16);
+  padding: 10px 18px;
+  color: #388e3c;
+  text-decoration: none;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  border: 1.3px solid rgba(232, 255, 90, 0.11);
+  transition: transform .36s, box-shadow .36s, background .36s, color .36s, border-color .36s;
+  backdrop-filter: blur(11px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-button:hover {
+  transform: scale(1.04) rotate(-0.5deg);
+  box-shadow: 0 12px 30px rgba(193,255,58,0.12), 0 4px 14px rgba(56,142,60,0.12);
+  background: rgba(238,255,210, 0.9);
+  border-color: #e8ff5a;
+  color: #1c361b;
+  text-shadow: 0 1px 3px rgba(67, 160, 71, 0.3);
+}
+
+.back-button::before {
+  content: '←';
+  margin-right: 6px;
+  font-size: 1.1rem;
+  transition: transform .3s;
+}
+
+.back-button:hover::before {
+  transform: scale(1.1);
+}
+
+  </style>
+</head>
+<div class="fixed-dropdown">
+  <select id="cropSelector" onchange="scrollToCrop()">
+    <option value="">-- Select a Crop --</option>
+    <option value="sugarcane">Sugarcane</option>
+    <option value="cotton">Cotton</option>
+    <option value="soyabean">Soyabean</option>
+    <option value="rice">Rice</option>
+    <option value="jowar">Jowar</option>
+    <option value="tur">Tur</option>
+    <option value="wheat">Wheat</option>
+    <option value="groundnut">Groundnut</option>
+    <option value="onion">Onion</option>
+    <option value="tomato">Tomato</option>
+    <option value="potato">Potato</option>
+    <option value="garlic">Garlic</option>
+  </select>
+</div>
+
+<a href="{{ url_for('index') }}" class="back-button">
+  Back to Crop Suggestions
+</a>
+
+<body>
+  <!-- Main content -->
+<main class="main">
+  <div class="glass-card">
+    <div id="defaultMessage">
+      <h2 style="text-align: center; color: #e8ff5a;">Please select a crop to view details</h2>
+    </div>
+
+<section id="sugarcane">
+  <h2 align="center" style="color: #e8ff5a; font-size: 2em;">Sugarcane</h2>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button onclick="openTab(this, 'sugarcane-soil')">🧪 Soil & Nutrients</button>
+    <button onclick="openTab(this, 'sugarcane-season')">🌱 Season</button>
+    <button onclick="openTab(this, 'sugarcane-pests')">🐛 Pests</button>
+    <button onclick="openTab(this, 'sugarcane-diseases')">🦠 Diseases</button>
+    <button onclick="openTab(this, 'sugarcane-remedies')">💊 Remedies</button>
+    <button onclick="openTab(this, 'sugarcane-yield')">📈 Yield</button>
+  </div>
+
+  <!-- Tab Contents -->
+  <div id="sugarcane-soil" class="tab-content">
+    <h3 align="center">Optimal Soil & Nutrient Requirements</h3>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Optimal Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Nitrogen (N)</td><td>150–225 kg/ha</td></tr>
+          <tr><td>Phosphorus (P)</td><td>60–90 kg/ha</td></tr>
+          <tr><td>Potassium (K)</td><td>120–150 kg/ha</td></tr>
+          <tr><td>Sulphur (S)</td><td>20–30 kg/ha</td></tr>
+          <tr><td>Organic Carbon (OC)</td><td>≥ 0.75%</td></tr>
+          <tr><td>pH</td><td>6.0 – 7.5</td></tr>
+          <tr><td>EC</td><td>&lt; 1.5 dS/m</td></tr>
+          <tr><td>Zinc (Zn)</td><td>0.6 – 1.5 ppm</td></tr>
+          <tr><td>Iron (Fe)</td><td>4 – 6 ppm</td></tr>
+          <tr><td>Boron (B)</td><td>0.3 – 0.6 ppm</td></tr>
+          <tr><td>Rainfall</td><td>1000 – 1600 mm</td></tr>
+          <tr><td>Temperature</td><td>25°C – 35°C</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="sugarcane-season" class="tab-content" style="display:none;">
+    <h3>Best Planting Season</h3>
+    <ul>
+      <li><strong>Tropical States:</strong> Autumn (Sept–Oct), Spring (Jan–Feb)</li>
+      <li><strong>Sub-tropical States:</strong> Spring (Feb–March)</li>
+    </ul>
+  </div>
+
+  <div id="sugarcane-pests" class="tab-content" style="display:none;">
+    <h3>Major Pests and Insects</h3>
+    <ul>
+      <li><strong>Early Shoot Borer:</strong> Dead heart – Chlorpyrifos or Cartap</li>
+      <li><strong>Top Shoot Borer:</strong> Older canes affected – Carbofuran</li>
+      <li><strong>Root Borer:</strong> Soil root damage – Chlorantraniliprole</li>
+      <li><strong>White Grubs:</strong> Root chewers – Phorate, Imidacloprid</li>
+      <li><strong>Pyrilla:</strong> Yellowing, sticky secretions – Neem sprays, Malathion</li>
+    </ul>
+  </div>
+
+  <div id="sugarcane-diseases" class="tab-content" style="display:none;">
+    <h3>Major Diseases & Control</h3>
+    <ul>
+      <li><strong>Red Rot:</strong> Reddish stalks – Trichoderma, Carbendazim dip</li>
+      <li><strong>Smut:</strong> Black growth – Disease-free setts, burn infected</li>
+      <li><strong>Grassy Shoot:</strong> Pale, excessive shoots – Rogueing, Streptomycin</li>
+      <li><strong>Wilt:</strong> Yellowing, lodging – Improve drainage</li>
+      <li><strong>Leaf Scald:</strong> White stripes – Clean seed, resistant varieties</li>
+    </ul>
+  </div>
+
+  <div id="sugarcane-remedies" class="tab-content" style="display:none;">
+    <h3>Nutrient Correction (If Deficient)</h3>
+    <ul>
+      <li><strong>Nitrogen:</strong> Split urea doses</li>
+      <li><strong>Phosphorus:</strong> Apply DAP/SSP at planting</li>
+      <li><strong>Potassium:</strong> MOP early & mid stage</li>
+      <li><strong>Zinc:</strong> ZnSO₄ 0.5% foliar spray</li>
+      <li><strong>Iron:</strong> FeSO₄ foliar or soil app</li>
+      <li><strong>Boron:</strong> Borax (1–2 kg/ha), 0.2% spray</li>
+      <li><strong>Sulphur:</strong> Gypsum, elemental sulphur</li>
+      <li><strong>Organic Matter:</strong> FYM, compost, green manure</li>
+      <li><strong>pH Fix:</strong> Lime (acidic), Gypsum (alkaline)</li>
+    </ul>
+  </div>
+
+  <div id="sugarcane-yield" class="tab-content" style="display:none;">
+    <h3>Price & Yield Estimates</h3>
+    <ul>
+      <li><strong>Yield:</strong> 60–100 tonnes/ha</li>
+      <li><strong>Price:</strong> ₹3,200/tonne</li>
+      <li><strong>Revenue:</strong> ₹192,000 – ₹320,000/ha</li>
+      <li><strong>Cost:</strong> ₹100,000 – ₹130,000/ha</li>
+      <li><strong>Net Profit:</strong> ₹60,000 – ₹190,000/ha</li>
+    </ul>
+  </div>
+</section>
+
+<section id="cotton">
+  <h2 align="center" style="color: #e8ff5a; font-size: 2em;">Cotton</h2>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button onclick="openTab(this, 'cotton-soil')">🧪 Soil & Nutrients</button>
+    <button onclick="openTab(this, 'cotton-season')">🌱 Season</button>
+    <button onclick="openTab(this, 'cotton-pests')">🐛 Pests</button>
+    <button onclick="openTab(this, 'cotton-diseases')">🦠 Diseases</button>
+    <button onclick="openTab(this, 'cotton-remedies')">💊 Remedies</button>
+    <button onclick="openTab(this, 'cotton-yield')">📈 Yield</button>
+  </div>
+
+  <!-- Tab Contents -->
+  <div id="cotton-soil" class="tab-content">
+    <h3 align="center">Optimal Soil & Nutrient Requirements</h3>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Optimal Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Nitrogen (N)</td><td>60–90 kg/ha</td></tr>
+          <tr><td>Phosphorus (P)</td><td>30–45 kg/ha</td></tr>
+          <tr><td>Potassium (K)</td><td>60–90 kg/ha</td></tr>
+          <tr><td>Sulphur (S)</td><td>20–30 kg/ha</td></tr>
+          <tr><td>Organic Carbon (OC)</td><td>≥ 0.5%</td></tr>
+          <tr><td>pH</td><td>6.0 – 7.5</td></tr>
+          <tr><td>EC</td><td>&lt; 2.0 dS/m</td></tr>
+          <tr><td>Zinc (Zn)</td><td>0.5 – 1.2 ppm</td></tr>
+          <tr><td>Iron (Fe)</td><td>3 – 6 ppm</td></tr>
+          <tr><td>Boron (B)</td><td>0.2 – 0.6 ppm</td></tr>
+          <tr><td>Rainfall</td><td>600 – 1200 mm</td></tr>
+          <tr><td>Temperature</td><td>20°C – 30°C</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="cotton-season" class="tab-content" style="display:none;">
+    <h3>Best Planting Season</h3>
+    <ul>
+      <li><strong>Kharif:</strong> June–July</li>
+      <li><strong>Summer:</strong> Feb–March (irrigated areas)</li>
+    </ul>
+  </div>
+
+  <div id="cotton-pests" class="tab-content" style="display:none;">
+    <h3>Major Pests and Insects</h3>
+    <ul>
+      <li><strong>Bollworms:</strong> Caterpillar in bolls – Bt cotton, Spinosad</li>
+      <li><strong>Whitefly:</strong> Honeydew on leaves – Imidacloprid, Neem</li>
+      <li><strong>Aphids:</strong> Curling leaves – Neem oil, Thiamethoxam</li>
+      <li><strong>Jassids:</strong> Yellowing – Acetamiprid, Neem soap</li>
+      <li><strong>Thrips:</strong> Silvery streaks – Fipronil, Neem extracts</li>
+    </ul>
+  </div>
+
+  <div id="cotton-diseases" class="tab-content" style="display:none;">
+    <h3>Major Diseases & Control</h3>
+    <ul>
+      <li><strong>Wilt:</strong> Yellowing, stunted – Disease-free seeds, rotation</li>
+      <li><strong>Leaf Curl Virus:</strong> Curling, thick leaves – Control whiteflies</li>
+      <li><strong>Alternaria:</strong> Brown leaf spots – Mancozeb spray</li>
+      <li><strong>Anthracnose:</strong> Stem cankers – Seed treatment, crop rotation</li>
+      <li><strong>Grey Mildew:</strong> Leaf mold – Sulphur dust/spray</li>
+    </ul>
+  </div>
+
+  <div id="cotton-remedies" class="tab-content" style="display:none;">
+    <h3>Nutrient Correction (If Deficient)</h3>
+    <ul>
+      <li><strong>Nitrogen:</strong> Urea split 3 doses</li>
+      <li><strong>Phosphorus:</strong> DAP at sowing</li>
+      <li><strong>Potassium:</strong> MOP basal/top</li>
+      <li><strong>Zinc:</strong> ZnSO₄ 0.5% foliar spray</li>
+      <li><strong>Iron:</strong> FeSO₄ soil + foliar</li>
+      <li><strong>Boron:</strong> Borax 1–2 kg/ha</li>
+      <li><strong>Sulphur:</strong> Gypsum, Bentonite</li>
+      <li><strong>Organic Matter:</strong> FYM, green manure</li>
+      <li><strong>pH Fix:</strong> Lime or Gypsum</li>
+    </ul>
+  </div>
+
+  <div id="cotton-yield" class="tab-content" style="display:none;">
+    <h3>Price & Yield Estimates</h3>
+    <ul>
+      <li><strong>Yield:</strong> 15–25 qtl/ha lint</li>
+      <li><strong>Price:</strong> ₹6,000/qtl</li>
+      <li><strong>Revenue:</strong> ₹90,000 – ₹150,000/ha</li>
+      <li><strong>Cost:</strong> ₹60,000 – ₹90,000/ha</li>
+      <li><strong>Net Profit:</strong> ₹30,000 – ₹60,000/ha</li>
+    </ul>
+  </div>
+</section>
+
+<section id="soyabean">
+  <h2 align="center" style="color: #e8ff5a; font-size: 2em;">Soyabean</h2>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button onclick="openTab(this, 'soyabean-soil')">🧪 Soil & Nutrients</button>
+    <button onclick="openTab(this, 'soyabean-season')">🌱 Season</button>
+    <button onclick="openTab(this, 'soyabean-pests')">🐛 Pests</button>
+    <button onclick="openTab(this, 'soyabean-diseases')">🦠 Diseases</button>
+    <button onclick="openTab(this, 'soyabean-remedies')">💊 Remedies</button>
+    <button onclick="openTab(this, 'soyabean-yield')">📈 Yield</button>
+  </div>
+
+  <!-- Tab Contents -->
+  <div id="soyabean-soil" class="tab-content">
+    <h3 align="center">Optimal Soil & Nutrient Requirements</h3>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Optimal Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Nitrogen (N)</td><td>20–30 kg/ha</td></tr>
+          <tr><td>Phosphorus (P)</td><td>40–60 kg/ha</td></tr>
+          <tr><td>Potassium (K)</td><td>30–45 kg/ha</td></tr>
+          <tr><td>Sulphur (S)</td><td>20–30 kg/ha</td></tr>
+          <tr><td>Organic Carbon (OC)</td><td>≥ 0.5%</td></tr>
+          <tr><td>pH</td><td>6.0 – 7.5</td></tr>
+          <tr><td>EC</td><td>&lt; 1.5 dS/m</td></tr>
+          <tr><td>Zinc (Zn)</td><td>0.5 – 1.0 ppm</td></tr>
+          <tr><td>Iron (Fe)</td><td>4 – 6 ppm</td></tr>
+          <tr><td>Boron (B)</td><td>0.2 – 0.5 ppm</td></tr>
+          <tr><td>Rainfall</td><td>500 – 700 mm</td></tr>
+          <tr><td>Temperature</td><td>20°C – 30°C</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="soyabean-season" class="tab-content" style="display:none;">
+    <h3>Best Planting Season</h3>
+    <ul>
+      <li><strong>Kharif Season:</strong> June–July (monsoon start)</li>
+    </ul>
+  </div>
+
+  <div id="soyabean-pests" class="tab-content" style="display:none;">
+    <h3>Major Pests and Insects</h3>
+    <ul>
+      <li><strong>Stem Fly:</strong> Maggots in stem – Chlorpyrifos, Quinalphos</li>
+      <li><strong>Girdle Beetle:</strong> Larvae cut stem – Triazophos, Acephate</li>
+      <li><strong>Green Semilooper:</strong> Leaf feeder – Spinosad, Neem extracts</li>
+      <li><strong>White Grubs:</strong> Root feeders – Soil treatment with Chlorpyrifos</li>
+      <li><strong>Aphids:</strong> Sap suckers – Imidacloprid or Neem oil</li>
+    </ul>
+  </div>
+
+  <div id="soyabean-diseases" class="tab-content" style="display:none;">
+    <h3>Major Diseases & Control</h3>
+    <ul>
+      <li><strong>Rhizoctonia Root Rot:</strong> Patchy growth – Seed treatment</li>
+      <li><strong>Yellow Mosaic Virus:</strong> Yellow patches – Resistant varieties</li>
+      <li><strong>Cercospora Leaf Spot:</strong> Dark spots – Mancozeb, Tebuconazole</li>
+      <li><strong>Anthracnose:</strong> Pod rot – Carbendazim spray</li>
+      <li><strong>Bacterial Blight:</strong> Water-soaked lesions – Copper oxychloride</li>
+    </ul>
+  </div>
+
+  <div id="soyabean-remedies" class="tab-content" style="display:none;">
+    <h3>Nutrient Correction (If Deficient)</h3>
+    <ul>
+      <li><strong>Nitrogen:</strong> Starter dose, rest via Rhizobium</li>
+      <li><strong>Phosphorus:</strong> Basal SSP/DAP</li>
+      <li><strong>Potassium:</strong> MOP basal/topdressing</li>
+      <li><strong>Zinc:</strong> ZnSO₄ 0.5% spray</li>
+      <li><strong>Iron:</strong> Fe chelates or foliar FeSO₄</li>
+      <li><strong>Boron:</strong> Borax 1 kg/ha or foliar</li>
+      <li><strong>Sulphur:</strong> Gypsum or elemental S</li>
+      <li><strong>Organic Matter:</strong> FYM, compost</li>
+      <li><strong>pH Fix:</strong> Lime or Gypsum as needed</li>
+    </ul>
+  </div>
+
+  <div id="soyabean-yield" class="tab-content" style="display:none;">
+    <h3>Price & Yield Estimates</h3>
+    <ul>
+      <li><strong>Yield:</strong> 12–20 qtl/ha</li>
+      <li><strong>Price:</strong> ₹5,000/qtl</li>
+      <li><strong>Revenue:</strong> ₹60,000 – ₹100,000/ha</li>
+      <li><strong>Cost:</strong> ₹40,000 – ₹60,000/ha</li>
+      <li><strong>Net Profit:</strong> ₹20,000 – ₹40,000/ha</li>
+    </ul>
+  </div>
+</section>
+
+<section id="rice">
+  <h2 align="center" style="color: #e8ff5a; font-size: 2em;">Rice</h2>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button onclick="openTab(this, 'rice-soil')">🧪 Soil & Nutrients</button>
+    <button onclick="openTab(this, 'rice-season')">🌱 Season</button>
+    <button onclick="openTab(this, 'rice-pests')">🐛 Pests</button>
+    <button onclick="openTab(this, 'rice-diseases')">🦠 Diseases</button>
+    <button onclick="openTab(this, 'rice-remedies')">💊 Remedies</button>
+    <button onclick="openTab(this, 'rice-yield')">📈 Yield</button>
+  </div>
+
+  <!-- Tab Contents -->
+  <div id="rice-soil" class="tab-content">
+    <h3 align="center">Optimal Soil & Nutrient Requirements</h3>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Optimal Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Nitrogen (N)</td><td>80–120 kg/ha</td></tr>
+          <tr><td>Phosphorus (P)</td><td>40–60 kg/ha</td></tr>
+          <tr><td>Potassium (K)</td><td>40–60 kg/ha</td></tr>
+          <tr><td>Sulphur (S)</td><td>20–30 kg/ha</td></tr>
+          <tr><td>Organic Carbon (OC)</td><td>≥ 0.75%</td></tr>
+          <tr><td>pH</td><td>5.5 – 7.5</td></tr>
+          <tr><td>EC</td><td>&lt; 2.0 dS/m</td></tr>
+          <tr><td>Zinc (Zn)</td><td>1.0 – 1.5 ppm</td></tr>
+          <tr><td>Iron (Fe)</td><td>5 – 7 ppm</td></tr>
+          <tr><td>Boron (B)</td><td>0.4 – 0.8 ppm</td></tr>
+          <tr><td>Rainfall</td><td>1200 – 1500 mm</td></tr>
+          <tr><td>Temperature</td><td>20°C – 35°C</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="rice-season" class="tab-content" style="display:none;">
+    <h3>Best Planting Season</h3>
+    <ul>
+      <li><strong>Kharif (Main Season):</strong> June–July</li>
+      <li><strong>Rabi (in South India):</strong> November–December</li>
+      <li><strong>Summer Rice (coastal/irrigated):</strong> February–March</li>
+    </ul>
+  </div>
+
+  <div id="rice-pests" class="tab-content" style="display:none;">
+    <h3>Major Pests and Insects</h3>
+    <ul>
+      <li><strong>Stem Borer:</strong> Dead heart – Cartap, Chlorantraniliprole</li>
+      <li><strong>Brown Planthopper:</strong> Hopper burn – Imidacloprid, Buprofezin</li>
+      <li><strong>Leaf Folder:</strong> Folded leaves – Chlorpyrifos, Neem extracts</li>
+      <li><strong>Gall Midge:</strong> Silver shoots – Fipronil, Resistant varieties</li>
+      <li><strong>Green Leafhopper:</strong> Vector of virus – Acetamiprid, Neem</li>
+    </ul>
+  </div>
+
+  <div id="rice-diseases" class="tab-content" style="display:none;">
+    <h3>Major Diseases & Control</h3>
+    <ul>
+      <li><strong>Bacterial Leaf Blight:</strong> Yellow streaks – Copper oxychloride</li>
+      <li><strong>Blast:</strong> Diamond lesions – Tricyclazole, Isoprothiolane</li>
+      <li><strong>Sheath Blight:</strong> Rotten sheath – Validamycin spray</li>
+      <li><strong>Tungro Virus:</strong> Stunting – Vector control, resistant varieties</li>
+      <li><strong>Brown Spot:</strong> Round brown lesions – Mancozeb, seed treatment</li>
+    </ul>
+  </div>
+
+  <div id="rice-remedies" class="tab-content" style="display:none;">
+    <h3>Nutrient Correction (If Deficient)</h3>
+    <ul>
+      <li><strong>Nitrogen:</strong> Split urea applications</li>
+      <li><strong>Phosphorus:</strong> Basal DAP/SSP</li>
+      <li><strong>Potassium:</strong> MOP basal/topdressing</li>
+      <li><strong>Zinc:</strong> ZnSO₄ 0.5% spray or basal</li>
+      <li><strong>Iron:</strong> FeSO₄ foliar or soil</li>
+      <li><strong>Boron:</strong> Borax 1 kg/ha or 0.2% spray</li>
+      <li><strong>Sulphur:</strong> Gypsum or elemental sulphur</li>
+      <li><strong>Organic Matter:</strong> FYM, green manure</li>
+      <li><strong>pH Fix:</strong> Lime (acidic), gypsum (alkaline)</li>
+    </ul>
+  </div>
+
+  <div id="rice-yield" class="tab-content" style="display:none;">
+    <h3>Price & Yield Estimates</h3>
+    <ul>
+      <li><strong>Yield:</strong> 40–60 qtl/ha</li>
+      <li><strong>Price:</strong> ₹2,000/qtl</li>
+      <li><strong>Revenue:</strong> ₹80,000 – ₹120,000/ha</li>
+      <li><strong>Cost:</strong> ₹40,000 – ₹60,000/ha</li>
+      <li><strong>Net Profit:</strong> ₹40,000 – ₹60,000/ha</li>
+    </ul>
+  </div>
+</section>
+
+<section id="jowar">
+  <h2 align="center" style="color: #e8ff5a; font-size: 2em;">Jowar</h2>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button onclick="openTab(this, 'jowar-soil')">🧪 Soil & Nutrients</button>
+    <button onclick="openTab(this, 'jowar-season')">🌱 Season</button>
+    <button onclick="openTab(this, 'jowar-pests')">🐛 Pests</button>
+    <button onclick="openTab(this, 'jowar-diseases')">🦠 Diseases</button>
+    <button onclick="openTab(this, 'jowar-remedies')">💊 Remedies</button>
+    <button onclick="openTab(this, 'jowar-yield')">📈 Yield</button>
+  </div>
+
+  <!-- Tab Contents -->
+  <div id="jowar-soil" class="tab-content">
+    <h3 align="center">Optimal Soil & Nutrient Requirements</h3>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Optimal Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Nitrogen (N)</td><td>60–80 kg/ha</td></tr>
+          <tr><td>Phosphorus (P)</td><td>30–40 kg/ha</td></tr>
+          <tr><td>Potassium (K)</td><td>30–40 kg/ha</td></tr>
+          <tr><td>Sulphur (S)</td><td>15–20 kg/ha</td></tr>
+          <tr><td>Organic Carbon (OC)</td><td>≥ 0.5%</td></tr>
+          <tr><td>pH</td><td>6.5 – 8.0</td></tr>
+          <tr><td>EC</td><td>&lt; 2.5 dS/m</td></tr>
+          <tr><td>Zinc (Zn)</td><td>0.5 – 1.0 ppm</td></tr>
+          <tr><td>Iron (Fe)</td><td>3 – 6 ppm</td></tr>
+          <tr><td>Boron (B)</td><td>0.2 – 0.5 ppm</td></tr>
+          <tr><td>Rainfall</td><td>400 – 700 mm</td></tr>
+          <tr><td>Temperature</td><td>25°C – 35°C</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="jowar-season" class="tab-content" style="display:none;">
+    <h3>Best Planting Season</h3>
+    <ul>
+      <li><strong>Kharif:</strong> June–July</li>
+      <li><strong>Rabi:</strong> October–November (in peninsular India)</li>
+    </ul>
+  </div>
+
+  <div id="jowar-pests" class="tab-content" style="display:none;">
+    <h3>Major Pests and Insects</h3>
+    <ul>
+      <li><strong>Shoot Fly:</strong> Dead hearts – Seed treatment, Imidacloprid</li>
+      <li><strong>Stem Borer:</strong> Bore holes in stem – Chlorpyrifos, Cartap</li>
+      <li><strong>Armyworm:</strong> Leaf feeders – Spinosad, Neem extracts</li>
+      <li><strong>White Grub:</strong> Root feeder – Soil treatment with Chlorpyrifos</li>
+      <li><strong>Midge:</strong> Small larvae in grain – Quinalphos spray at flowering</li>
+    </ul>
+  </div>
+
+  <div id="jowar-diseases" class="tab-content" style="display:none;">
+    <h3>Major Diseases & Control</h3>
+    <ul>
+      <li><strong>Downy Mildew:</strong> White growth – Metalaxyl seed treatment</li>
+      <li><strong>Anthracnose:</strong> Leaf spots – Mancozeb spray</li>
+      <li><strong>Charcoal Rot:</strong> Stem rot – Avoid stress, balanced nutrition</li>
+      <li><strong>Rust:</strong> Orange pustules – Propiconazole spray</li>
+      <li><strong>Ergot:</strong> Pink fungal heads – Remove infected panicles</li>
+    </ul>
+  </div>
+
+  <div id="jowar-remedies" class="tab-content" style="display:none;">
+    <h3>Nutrient Correction (If Deficient)</h3>
+    <ul>
+      <li><strong>Nitrogen:</strong> Split application of urea</li>
+      <li><strong>Phosphorus:</strong> Basal SSP or DAP</li>
+      <li><strong>Potassium:</strong> MOP as basal/topdressing</li>
+      <li><strong>Zinc:</strong> ZnSO₄ foliar or soil (10–20 kg/ha)</li>
+      <li><strong>Iron:</strong> FeSO₄ foliar spray 0.5%</li>
+      <li><strong>Boron:</strong> Borax foliar or 1 kg/ha</li>
+      <li><strong>Sulphur:</strong> Apply gypsum or elemental sulphur</li>
+      <li><strong>Organic Matter:</strong> FYM, compost before sowing</li>
+      <li><strong>pH Fix:</strong> Lime or gypsum depending on soil type</li>
+    </ul>
+  </div>
+
+  <div id="jowar-yield" class="tab-content" style="display:none;">
+    <h3>Price & Yield Estimates</h3>
+    <ul>
+      <li><strong>Yield:</strong> 20–30 qtl/ha</li>
+      <li><strong>Price:</strong> ₹2,000/qtl</li>
+      <li><strong>Revenue:</strong> ₹40,000 – ₹60,000/ha</li>
+      <li><strong>Cost:</strong> ₹25,000 – ₹40,000/ha</li>
+      <li><strong>Net Profit:</strong> ₹15,000 – ₹35,000/ha</li>
+    </ul>
+  </div>
+</section>
+
+<section id="tur">
+  <h2 align="center" style="color: #e8ff5a; font-size: 2em;">Tur (Pigeon Pea)</h2>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button onclick="openTab(this, 'tur-soil')">🧪 Soil & Nutrients</button>
+    <button onclick="openTab(this, 'tur-season')">🌱 Season</button>
+    <button onclick="openTab(this, 'tur-pests')">🐛 Pests</button>
+    <button onclick="openTab(this, 'tur-diseases')">🦠 Diseases</button>
+    <button onclick="openTab(this, 'tur-remedies')">💊 Remedies</button>
+    <button onclick="openTab(this, 'tur-yield')">📈 Yield</button>
+  </div>
+
+  <!-- Tab Contents -->
+  <div id="tur-soil" class="tab-content">
+    <h3 align="center">Optimal Soil & Nutrient Requirements</h3>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Optimal Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Nitrogen (N)</td><td>20–25 kg/ha</td></tr>
+          <tr><td>Phosphorus (P)</td><td>40–50 kg/ha</td></tr>
+          <tr><td>Potassium (K)</td><td>20–30 kg/ha</td></tr>
+          <tr><td>Sulphur (S)</td><td>15–20 kg/ha</td></tr>
+          <tr><td>Organic Carbon (OC)</td><td>≥ 0.5%</td></tr>
+          <tr><td>pH</td><td>6.0 – 7.5</td></tr>
+          <tr><td>EC</td><td>&lt; 2.0 dS/m</td></tr>
+          <tr><td>Zinc (Zn)</td><td>0.5 – 1.2 ppm</td></tr>
+          <tr><td>Iron (Fe)</td><td>3 – 6 ppm</td></tr>
+          <tr><td>Boron (B)</td><td>0.2 – 0.5 ppm</td></tr>
+          <tr><td>Rainfall</td><td>600 – 1000 mm</td></tr>
+          <tr><td>Temperature</td><td>20°C – 35°C</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tur-season" class="tab-content" style="display:none;">
+    <h3>Best Planting Season</h3>
+    <ul>
+      <li><strong>Kharif Season:</strong> June–July (monsoon onset)</li>
+      <li><strong>Rabi Season:</strong> October–November (in irrigated areas)</li>
+    </ul>
+  </div>
+
+  <div id="tur-pests" class="tab-content" style="display:none;">
+    <h3>Major Pests and Insects</h3>
+    <ul>
+      <li><strong>Pod Borer:</strong> Bore into pods – Maruca-resistant varieties, Spinosad</li>
+      <li><strong>Pod Fly:</strong> Maggots in seeds – Quinalphos, Neem sprays</li>
+      <li><strong>Blue Butterfly:</strong> Defoliator – Chlorpyrifos, light traps</li>
+      <li><strong>Stem Fly:</strong> Stem tunneling – Seed treatment with Imidacloprid</li>
+      <li><strong>Aphids & Jassids:</strong> Sap suckers – Neem oil, Acetamiprid</li>
+    </ul>
+  </div>
+
+  <div id="tur-diseases" class="tab-content" style="display:none;">
+    <h3>Major Diseases & Control</h3>
+    <ul>
+      <li><strong>Wilt:</strong> Sudden drying – Resistant varieties, Trichoderma</li>
+      <li><strong>Phytophthora Blight:</strong> Collar rot – Metalaxyl, good drainage</li>
+      <li><strong>Sterility Mosaic:</strong> Bushy plants – Vector control (mites)</li>
+      <li><strong>Leaf Spot:</strong> Circular brown spots – Mancozeb, seed treatment</li>
+      <li><strong>Powdery Mildew:</strong> White fungal coat – Sulphur spray</li>
+    </ul>
+  </div>
+
+  <div id="tur-remedies" class="tab-content" style="display:none;">
+    <h3>Nutrient Correction (If Deficient)</h3>
+    <ul>
+      <li><strong>Nitrogen:</strong> Starter dose; Rhizobium inoculation</li>
+      <li><strong>Phosphorus:</strong> DAP basal</li>
+      <li><strong>Potassium:</strong> MOP if needed</li>
+      <li><strong>Zinc:</strong> ZnSO₄ 0.5% spray</li>
+      <li><strong>Iron:</strong> FeSO₄ foliar/soil</li>
+      <li><strong>Boron:</strong> Borax 1–2 kg/ha</li>
+      <li><strong>Sulphur:</strong> Apply gypsum</li>
+      <li><strong>Organic Matter:</strong> FYM, compost</li>
+      <li><strong>pH Fix:</strong> Lime or gypsum</li>
+    </ul>
+  </div>
+
+  <div id="tur-yield" class="tab-content" style="display:none;">
+    <h3>Price & Yield Estimates</h3>
+    <ul>
+      <li><strong>Yield:</strong> 10–15 qtl/ha</li>
+      <li><strong>Price:</strong> ₹6,500/qtl</li>
+      <li><strong>Revenue:</strong> ₹65,000 – ₹97,500/ha</li>
+      <li><strong>Cost:</strong> ₹40,000 – ₹55,000/ha</li>
+      <li><strong>Net Profit:</strong> ₹25,000 – ₹42,500/ha</li>
+    </ul>
+  </div>
+</section>
+
+<section id="wheat">
+  <h2 align="center" style="color: #e8ff5a; font-size: 2em;">Wheat</h2>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button onclick="openTab(this, 'wheat-soil')">🧪 Soil & Nutrients</button>
+    <button onclick="openTab(this, 'wheat-season')">🌱 Season</button>
+    <button onclick="openTab(this, 'wheat-pests')">🐛 Pests</button>
+    <button onclick="openTab(this, 'wheat-diseases')">🦠 Diseases</button>
+    <button onclick="openTab(this, 'wheat-remedies')">💊 Remedies</button>
+    <button onclick="openTab(this, 'wheat-yield')">📈 Yield</button>
+  </div>
+
+  <!-- Tab Contents -->
+  <div id="wheat-soil" class="tab-content">
+    <h3 align="center">Optimal Soil & Nutrient Requirements</h3>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Optimal Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Nitrogen (N)</td><td>100–150 kg/ha</td></tr>
+          <tr><td>Phosphorus (P)</td><td>40–60 kg/ha</td></tr>
+          <tr><td>Potassium (K)</td><td>40–60 kg/ha</td></tr>
+          <tr><td>Sulphur (S)</td><td>20–30 kg/ha</td></tr>
+          <tr><td>Organic Carbon (OC)</td><td>≥ 0.5%</td></tr>
+          <tr><td>pH</td><td>6.5 – 7.5</td></tr>
+          <tr><td>EC</td><td>&lt; 1.5 dS/m</td></tr>
+          <tr><td>Zinc (Zn)</td><td>0.6 – 1.2 ppm</td></tr>
+          <tr><td>Iron (Fe)</td><td>4 – 6 ppm</td></tr>
+          <tr><td>Boron (B)</td><td>0.3 – 0.6 ppm</td></tr>
+          <tr><td>Rainfall</td><td>500 – 1000 mm</td></tr>
+          <tr><td>Temperature</td><td>20°C – 25°C</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="wheat-season" class="tab-content" style="display:none;">
+    <h3>Best Planting Season</h3>
+    <ul>
+      <li><strong>Rabi Season:</strong> Sowing in Nov–Dec, harvesting in March–April</li>
+    </ul>
+  </div>
+
+  <div id="wheat-pests" class="tab-content" style="display:none;">
+    <h3>Major Pests and Insects</h3>
+    <ul>
+      <li><strong>Termites:</strong> Feed on roots – Chlorpyrifos seed treatment</li>
+      <li><strong>Armyworm:</strong> Caterpillars on leaves – Quinalphos, Neem</li>
+      <li><strong>Aphids:</strong> Sap sucking – Imidacloprid, Neem oil</li>
+      <li><strong>Grasshoppers:</strong> Chewing leaves – Malathion spray</li>
+      <li><strong>Pink Stem Borer:</strong> Stem tunneling – Cartap hydrochloride</li>
+    </ul>
+  </div>
+
+  <div id="wheat-diseases" class="tab-content" style="display:none;">
+    <h3>Major Diseases & Control</h3>
+    <ul>
+      <li><strong>Rust (Brown/Yellow/Black):</strong> Leaf stripes – Mancozeb or Propiconazole</li>
+      <li><strong>Smut:</strong> Black fungal spores – Clean seeds, seed treatment</li>
+      <li><strong>Powdery Mildew:</strong> White dust – Sulphur or Carbendazim spray</li>
+      <li><strong>Leaf Blight:</strong> Drying leaves – Copper oxychloride</li>
+      <li><strong>Karnal Bunt:</strong> Rotten grains – Avoid early sowing, fungicide spray</li>
+    </ul>
+  </div>
+
+  <div id="wheat-remedies" class="tab-content" style="display:none;">
+    <h3>Nutrient Correction (If Deficient)</h3>
+    <ul>
+      <li><strong>Nitrogen:</strong> 2–3 split urea doses</li>
+      <li><strong>Phosphorus:</strong> DAP/SSP at sowing</li>
+      <li><strong>Potassium:</strong> MOP if deficient</li>
+      <li><strong>Zinc:</strong> ZnSO₄ basal or foliar spray</li>
+      <li><strong>Iron:</strong> FeSO₄ 0.5% spray</li>
+      <li><strong>Boron:</strong> Borax foliar or soil</li>
+      <li><strong>Sulphur:</strong> Gypsum or elemental S</li>
+      <li><strong>Organic Matter:</strong> FYM, compost, green manure</li>
+      <li><strong>pH Fix:</strong> Lime (acidic), gypsum (alkaline)</li>
+    </ul>
+  </div>
+
+  <div id="wheat-yield" class="tab-content" style="display:none;">
+    <h3>Price & Yield Estimates</h3>
+    <ul>
+      <li><strong>Yield:</strong> 30–45 qtl/ha</li>
+      <li><strong>Price:</strong> ₹2,200/qtl</li>
+      <li><strong>Revenue:</strong> ₹66,000 – ₹99,000/ha</li>
+      <li><strong>Cost:</strong> ₹40,000 – ₹55,000/ha</li>
+      <li><strong>Net Profit:</strong> ₹26,000 – ₹44,000/ha</li>
+    </ul>
+  </div>
+</section>
+
+<section id="groundnut">
+  <h2 align="center" style="color: #e8ff5a; font-size: 2em;">Groundnut</h2>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button onclick="openTab(this, 'groundnut-soil')">🧪 Soil & Nutrients</button>
+    <button onclick="openTab(this, 'groundnut-season')">🌱 Season</button>
+    <button onclick="openTab(this, 'groundnut-pests')">🐛 Pests</button>
+    <button onclick="openTab(this, 'groundnut-diseases')">🦠 Diseases</button>
+    <button onclick="openTab(this, 'groundnut-remedies')">💊 Remedies</button>
+    <button onclick="openTab(this, 'groundnut-yield')">📈 Yield</button>
+  </div>
+
+  <!-- Tab Contents -->
+  <div id="groundnut-soil" class="tab-content">
+    <h3 align="center">Optimal Soil & Nutrient Requirements</h3>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Optimal Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Nitrogen (N)</td><td>20–30 kg/ha</td></tr>
+          <tr><td>Phosphorus (P)</td><td>40–60 kg/ha</td></tr>
+          <tr><td>Potassium (K)</td><td>40–60 kg/ha</td></tr>
+          <tr><td>Sulphur (S)</td><td>20–30 kg/ha</td></tr>
+          <tr><td>Calcium (Ca)</td><td>150–200 kg/ha (at pegging)</td></tr>
+          <tr><td>Organic Carbon (OC)</td><td>≥ 0.5%</td></tr>
+          <tr><td>pH</td><td>6.0 – 7.5</td></tr>
+          <tr><td>EC</td><td>&lt; 1.5 dS/m</td></tr>
+          <tr><td>Zinc (Zn)</td><td>0.5 – 1.0 ppm</td></tr>
+          <tr><td>Boron (B)</td><td>0.2 – 0.5 ppm</td></tr>
+          <tr><td>Rainfall</td><td>500 – 1000 mm</td></tr>
+          <tr><td>Temperature</td><td>25°C – 30°C</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="groundnut-season" class="tab-content" style="display:none;">
+    <h3>Best Planting Season</h3>
+    <ul>
+      <li><strong>Kharif:</strong> June–July (major season in India)</li>
+      <li><strong>Rabi:</strong> November–December (coastal regions)</li>
+      <li><strong>Summer:</strong> February–March (irrigated areas)</li>
+    </ul>
+  </div>
+
+  <div id="groundnut-pests" class="tab-content" style="display:none;">
+    <h3>Major Pests and Insects</h3>
+    <ul>
+      <li><strong>Leaf Miner:</strong> Leaf tunnels – Chlorpyrifos, Neem spray</li>
+      <li><strong>White Grubs:</strong> Root feeders – Phorate in soil</li>
+      <li><strong>Aphids:</strong> Sap suckers – Imidacloprid, Neem oil</li>
+      <li><strong>Red Hairy Caterpillar:</strong> Defoliator – Light traps, Quinalphos</li>
+      <li><strong>Thrips:</strong> Leaf curl – Fipronil, Acetamiprid</li>
+    </ul>
+  </div>
+
+  <div id="groundnut-diseases" class="tab-content" style="display:none;">
+    <h3>Major Diseases & Control</h3>
+    <ul>
+      <li><strong>Tikka Leaf Spot:</strong> Brown spots – Mancozeb or Chlorothalonil</li>
+      <li><strong>Rust:</strong> Orange pustules – Propiconazole spray</li>
+      <li><strong>Collar Rot:</strong> Seedling death – Trichoderma seed treatment</li>
+      <li><strong>Stem Rot:</strong> White fungal mat – Proper drainage, Carbendazim</li>
+      <li><strong>Bacterial Wilt:</strong> Sudden wilting – Crop rotation, resistant varieties</li>
+    </ul>
+  </div>
+
+  <div id="groundnut-remedies" class="tab-content" style="display:none;">
+    <h3>Nutrient Correction (If Deficient)</h3>
+    <ul>
+      <li><strong>Nitrogen:</strong> Starter dose; Rhizobium inoculation</li>
+      <li><strong>Phosphorus:</strong> Basal DAP/SSP</li>
+      <li><strong>Potassium:</strong> MOP as topdressing</li>
+      <li><strong>Calcium:</strong> Gypsum during pegging</li>
+      <li><strong>Zinc:</strong> ZnSO₄ 0.5% foliar</li>
+      <li><strong>Boron:</strong> Borax 1 kg/ha</li>
+      <li><strong>Sulphur:</strong> Gypsum or elemental S</li>
+      <li><strong>Organic Matter:</strong> FYM, compost</li>
+      <li><strong>pH Fix:</strong> Lime or gypsum</li>
+    </ul>
+  </div>
+
+  <div id="groundnut-yield" class="tab-content" style="display:none;">
+    <h3>Price & Yield Estimates</h3>
+    <ul>
+      <li><strong>Yield:</strong> 15–25 qtl/ha</li>
+      <li><strong>Price:</strong> ₹6,000/qtl</li>
+      <li><strong>Revenue:</strong> ₹90,000 – ₹150,000/ha</li>
+      <li><strong>Cost:</strong> ₹55,000 – ₹75,000/ha</li>
+      <li><strong>Net Profit:</strong> ₹35,000 – ₹75,000/ha</li>
+    </ul>
+  </div>
+</section>
+
+<section id="onion">
+  <h2 align="center" style="color: #e8ff5a; font-size: 2em;">Onion</h2>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button onclick="openTab(this, 'onion-soil')">🧪 Soil & Nutrients</button>
+    <button onclick="openTab(this, 'onion-season')">🌱 Season</button>
+    <button onclick="openTab(this, 'onion-pests')">🐛 Pests</button>
+    <button onclick="openTab(this, 'onion-diseases')">🦠 Diseases</button>
+    <button onclick="openTab(this, 'onion-remedies')">💊 Remedies</button>
+    <button onclick="openTab(this, 'onion-yield')">📈 Yield</button>
+  </div>
+
+  <!-- Tab Contents -->
+  <div id="onion-soil" class="tab-content">
+    <h3 align="center">Optimal Soil & Nutrient Requirements</h3>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Optimal Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Nitrogen (N)</td><td>100–120 kg/ha</td></tr>
+          <tr><td>Phosphorus (P)</td><td>40–60 kg/ha</td></tr>
+          <tr><td>Potassium (K)</td><td>80–100 kg/ha</td></tr>
+          <tr><td>Sulphur (S)</td><td>30–40 kg/ha</td></tr>
+          <tr><td>Organic Carbon (OC)</td><td>≥ 0.75%</td></tr>
+          <tr><td>pH</td><td>6.0 – 7.5</td></tr>
+          <tr><td>EC</td><td>&lt; 1.0 dS/m</td></tr>
+          <tr><td>Zinc (Zn)</td><td>0.5 – 1.0 ppm</td></tr>
+          <tr><td>Iron (Fe)</td><td>3 – 6 ppm</td></tr>
+          <tr><td>Boron (B)</td><td>0.2 – 0.5 ppm</td></tr>
+          <tr><td>Rainfall</td><td>650 – 1000 mm</td></tr>
+          <tr><td>Temperature</td><td>20°C – 30°C</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="onion-season" class="tab-content" style="display:none;">
+    <h3>Best Planting Season</h3>
+    <ul>
+      <li><strong>Kharif:</strong> June–July</li>
+      <li><strong>Late Kharif:</strong> August–September</li>
+      <li><strong>Rabi:</strong> December–January (main season)</li>
+    </ul>
+  </div>
+
+  <div id="onion-pests" class="tab-content" style="display:none;">
+    <h3>Major Pests and Insects</h3>
+    <ul>
+      <li><strong>Thrips:</strong> Silvery patches – Fipronil, Neem oil</li>
+      <li><strong>Onion Maggot:</strong> Root damage – Soil drench with Chlorpyrifos</li>
+      <li><strong>Cutworm:</strong> Cuts seedlings – Quinalphos, baiting</li>
+      <li><strong>Aphids:</strong> Curling leaves – Imidacloprid, Neem oil</li>
+      <li><strong>Leaf Miner:</strong> Tunnels in leaves – Spinosad, Neem extracts</li>
+    </ul>
+  </div>
+
+  <div id="onion-diseases" class="tab-content" style="display:none;">
+    <h3>Major Diseases & Control</h3>
+    <ul>
+      <li><strong>Purple Blotch:</strong> Purple leaf spots – Mancozeb, Tebuconazole</li>
+      <li><strong>Stemphylium Blight:</strong> Dark spots – Chlorothalonil</li>
+      <li><strong>Downy Mildew:</strong> Pale patches – Metalaxyl spray</li>
+      <li><strong>Fusarium Rot:</strong> Bulb decay – Seed treatment, proper drainage</li>
+      <li><strong>Basal Rot:</strong> Yellowing – Avoid excess irrigation</li>
+    </ul>
+  </div>
+
+  <div id="onion-remedies" class="tab-content" style="display:none;">
+    <h3>Nutrient Correction (If Deficient)</h3>
+    <ul>
+      <li><strong>Nitrogen:</strong> 2–3 splits of urea</li>
+      <li><strong>Phosphorus:</strong> Apply SSP at transplanting</li>
+      <li><strong>Potassium:</strong> MOP at basal and top stage</li>
+      <li><strong>Zinc:</strong> ZnSO₄ foliar spray 0.5%</li>
+      <li><strong>Iron:</strong> Fe chelates or FeSO₄ spray</li>
+      <li><strong>Boron:</strong> Borax foliar or 1 kg/ha</li>
+      <li><strong>Sulphur:</strong> Apply gypsum or elemental S</li>
+      <li><strong>Organic Matter:</strong> FYM/compost before planting</li>
+      <li><strong>pH Fix:</strong> Lime or gypsum depending on soil</li>
+    </ul>
+  </div>
+
+  <div id="onion-yield" class="tab-content" style="display:none;">
+    <h3>Price & Yield Estimates</h3>
+    <ul>
+      <li><strong>Yield:</strong> 200–300 qtl/ha (bulbs)</li>
+      <li><strong>Price:</strong> ₹800–₹1,200/qtl</li>
+      <li><strong>Revenue:</strong> ₹160,000 – ₹360,000/ha</li>
+      <li><strong>Cost:</strong> ₹90,000 – ₹130,000/ha</li>
+      <li><strong>Net Profit:</strong> ₹70,000 – ₹230,000/ha</li>
+    </ul>
+  </div>
+</section>
+
+<section id="tomato">
+  <h2 align="center" style="color: #e8ff5a; font-size: 2em;">Tomato</h2>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button onclick="openTab(this, 'tomato-soil')">🧪 Soil & Nutrients</button>
+    <button onclick="openTab(this, 'tomato-season')">🌱 Season</button>
+    <button onclick="openTab(this, 'tomato-pests')">🐛 Pests</button>
+    <button onclick="openTab(this, 'tomato-diseases')">🦠 Diseases</button>
+    <button onclick="openTab(this, 'tomato-remedies')">💊 Remedies</button>
+    <button onclick="openTab(this, 'tomato-yield')">📈 Yield</button>
+  </div>
+
+  <!-- Tab Contents -->
+  <div id="tomato-soil" class="tab-content">
+    <h3 align="center">Optimal Soil & Nutrient Requirements</h3>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Optimal Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Nitrogen (N)</td><td>100–120 kg/ha</td></tr>
+          <tr><td>Phosphorus (P)</td><td>50–60 kg/ha</td></tr>
+          <tr><td>Potassium (K)</td><td>100–120 kg/ha</td></tr>
+          <tr><td>Sulphur (S)</td><td>25–30 kg/ha</td></tr>
+          <tr><td>Organic Carbon (OC)</td><td>≥ 0.75%</td></tr>
+          <tr><td>pH</td><td>6.0 – 7.5</td></tr>
+          <tr><td>EC</td><td>&lt; 1.0 dS/m</td></tr>
+          <tr><td>Zinc (Zn)</td><td>0.5 – 1.0 ppm</td></tr>
+          <tr><td>Iron (Fe)</td><td>4 – 6 ppm</td></tr>
+          <tr><td>Boron (B)</td><td>0.3 – 0.6 ppm</td></tr>
+          <tr><td>Rainfall</td><td>600 – 800 mm</td></tr>
+          <tr><td>Temperature</td><td>20°C – 30°C</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tomato-season" class="tab-content" style="display:none;">
+    <h3>Best Planting Season</h3>
+    <ul>
+      <li><strong>Kharif:</strong> June–July</li>
+      <li><strong>Rabi:</strong> October–November</li>
+      <li><strong>Summer:</strong> January–February (under irrigation)</li>
+    </ul>
+  </div>
+
+  <div id="tomato-pests" class="tab-content" style="display:none;">
+    <h3>Major Pests and Insects</h3>
+    <ul>
+      <li><strong>Fruit Borer:</strong> Bore into fruit – Spinosad, Neem extracts</li>
+      <li><strong>Whitefly:</strong> Transmit virus – Imidacloprid, Yellow sticky traps</li>
+      <li><strong>Thrips:</strong> Leaf curl – Fipronil, Acetamiprid</li>
+      <li><strong>Leaf Miner:</strong> Tunnels in leaves – Neem oil, Spinosad</li>
+      <li><strong>Aphids:</strong> Curling & stunting – Neem + systemic insecticide</li>
+    </ul>
+  </div>
+
+  <div id="tomato-diseases" class="tab-content" style="display:none;">
+    <h3>Major Diseases & Control</h3>
+    <ul>
+      <li><strong>Early Blight:</strong> Concentric leaf spots – Mancozeb, Chlorothalonil</li>
+      <li><strong>Late Blight:</strong> Blackening leaves – Metalaxyl + Mancozeb</li>
+      <li><strong>Tomato Leaf Curl Virus:</strong> Curling, stunting – Vector control (whitefly)</li>
+      <li><strong>Fusarium Wilt:</strong> Yellowing – Resistant varieties, Trichoderma</li>
+      <li><strong>Bacterial Wilt:</strong> Sudden wilting – Crop rotation, sanitation</li>
+    </ul>
+  </div>
+
+  <div id="tomato-remedies" class="tab-content" style="display:none;">
+    <h3>Nutrient Correction (If Deficient)</h3>
+    <ul>
+      <li><strong>Nitrogen:</strong> 2–3 splits of urea</li>
+      <li><strong>Phosphorus:</strong> SSP or DAP at planting</li>
+      <li><strong>Potassium:</strong> MOP split application</li>
+      <li><strong>Zinc:</strong> ZnSO₄ foliar spray 0.5%</li>
+      <li><strong>Iron:</strong> Fe chelates or FeSO₄ foliar</li>
+      <li><strong>Boron:</strong> Borax 0.2% foliar or 1 kg/ha</li>
+      <li><strong>Sulphur:</strong> Gypsum or elemental sulphur</li>
+      <li><strong>Organic Matter:</strong> FYM, compost, biofertilizer</li>
+      <li><strong>pH Fix:</strong> Lime (acidic), gypsum (alkaline)</li>
+    </ul>
+  </div>
+
+  <div id="tomato-yield" class="tab-content" style="display:none;">
+    <h3>Price & Yield Estimates</h3>
+    <ul>
+      <li><strong>Yield:</strong> 250–400 qtl/ha</li>
+      <li><strong>Price:</strong> ₹800–₹1,200/qtl</li>
+      <li><strong>Revenue:</strong> ₹200,000 – ₹480,000/ha</li>
+      <li><strong>Cost:</strong> ₹100,000 – ₹140,000/ha</li>
+      <li><strong>Net Profit:</strong> ₹100,000 – ₹340,000/ha</li>
+    </ul>
+  </div>
+</section>
+
+<section id="potato">
+  <h2 align="center" style="color: #e8ff5a; font-size: 2em;">Potato</h2>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button onclick="openTab(this, 'potato-soil')">🧪 Soil & Nutrients</button>
+    <button onclick="openTab(this, 'potato-season')">🌱 Season</button>
+    <button onclick="openTab(this, 'potato-pests')">🐛 Pests</button>
+    <button onclick="openTab(this, 'potato-diseases')">🦠 Diseases</button>
+    <button onclick="openTab(this, 'potato-remedies')">💊 Remedies</button>
+    <button onclick="openTab(this, 'potato-yield')">📈 Yield</button>
+  </div>
+
+  <!-- Tab Contents -->
+  <div id="potato-soil" class="tab-content">
+    <h3 align="center">Optimal Soil & Nutrient Requirements</h3>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Optimal Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Nitrogen (N)</td><td>120–180 kg/ha</td></tr>
+          <tr><td>Phosphorus (P)</td><td>60–90 kg/ha</td></tr>
+          <tr><td>Potassium (K)</td><td>100–150 kg/ha</td></tr>
+          <tr><td>Sulphur (S)</td><td>25–30 kg/ha</td></tr>
+          <tr><td>Organic Carbon (OC)</td><td>≥ 0.75%</td></tr>
+          <tr><td>pH</td><td>5.5 – 6.5</td></tr>
+          <tr><td>EC</td><td>&lt; 1.0 dS/m</td></tr>
+          <tr><td>Zinc (Zn)</td><td>0.5 – 1.0 ppm</td></tr>
+          <tr><td>Iron (Fe)</td><td>4 – 6 ppm</td></tr>
+          <tr><td>Boron (B)</td><td>0.2 – 0.5 ppm</td></tr>
+          <tr><td>Rainfall</td><td>500 – 750 mm</td></tr>
+          <tr><td>Temperature</td><td>15°C – 25°C</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="potato-season" class="tab-content" style="display:none;">
+    <h3>Best Planting Season</h3>
+    <ul>
+      <li><strong>Plains:</strong> October–November (Rabi)</li>
+      <li><strong>Hills:</strong> March–May (Kharif)</li>
+    </ul>
+  </div>
+
+  <div id="potato-pests" class="tab-content" style="display:none;">
+    <h3>Major Pests and Insects</h3>
+    <ul>
+      <li><strong>Cutworms:</strong> Cuts seedlings – Soil drench, baiting</li>
+      <li><strong>White Grubs:</strong> Root damage – Soil insecticide, FYM treatment</li>
+      <li><strong>Aphids:</strong> Virus vectors – Imidacloprid, Neem oil</li>
+      <li><strong>Leaf Hopper:</strong> Curling leaves – Fipronil, Neem spray</li>
+      <li><strong>Colorado Beetle:</strong> Leaf defoliation – Quinalphos, hand picking</li>
+    </ul>
+  </div>
+
+  <div id="potato-diseases" class="tab-content" style="display:none;">
+    <h3>Major Diseases & Control</h3>
+    <ul>
+      <li><strong>Late Blight:</strong> Black leaf rot – Mancozeb + Metalaxyl</li>
+      <li><strong>Early Blight:</strong> Target spots – Chlorothalonil, Zineb</li>
+      <li><strong>Common Scab:</strong> Cracked tubers – pH adjustment, crop rotation</li>
+      <li><strong>Wilt:</strong> Yellowing – Soil solarization, Trichoderma</li>
+      <li><strong>Brown Rot:</strong> Sudden wilt – Sanitation, crop rotation</li>
+    </ul>
+  </div>
+
+  <div id="potato-remedies" class="tab-content" style="display:none;">
+    <h3>Nutrient Correction (If Deficient)</h3>
+    <ul>
+      <li><strong>Nitrogen:</strong> 2–3 split urea doses</li>
+      <li><strong>Phosphorus:</strong> DAP or SSP at planting</li>
+      <li><strong>Potassium:</strong> MOP as basal + topdress</li>
+      <li><strong>Zinc:</strong> ZnSO₄ foliar 0.5%</li>
+      <li><strong>Iron:</strong> FeSO₄ 0.5% foliar</li>
+      <li><strong>Boron:</strong> Borax foliar or 1 kg/ha</li>
+      <li><strong>Sulphur:</strong> Gypsum or elemental sulphur</li>
+      <li><strong>Organic Matter:</strong> Compost, FYM, green manure</li>
+      <li><strong>pH Fix:</strong> Lime (acidic), gypsum (alkaline)</li>
+    </ul>
+  </div>
+
+  <div id="potato-yield" class="tab-content" style="display:none;">
+    <h3>Price & Yield Estimates</h3>
+    <ul>
+      <li><strong>Yield:</strong> 200–300 qtl/ha</li>
+      <li><strong>Price:</strong> ₹1,000/qtl</li>
+      <li><strong>Revenue:</strong> ₹200,000 – ₹300,000/ha</li>
+      <li><strong>Cost:</strong> ₹100,000 – ₹140,000/ha</li>
+      <li><strong>Net Profit:</strong> ₹100,000 – ₹160,000/ha</li>
+    </ul>
+  </div>
+</section>
+
+<section id="garlic">
+  <h2 align="center" style="color: #e8ff5a; font-size: 2em;">Garlic</h2>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button onclick="openTab(this, 'garlic-soil')">🧪 Soil & Nutrients</button>
+    <button onclick="openTab(this, 'garlic-season')">🌱 Season</button>
+    <button onclick="openTab(this, 'garlic-pests')">🐛 Pests</button>
+    <button onclick="openTab(this, 'garlic-diseases')">🦠 Diseases</button>
+    <button onclick="openTab(this, 'garlic-remedies')">💊 Remedies</button>
+    <button onclick="openTab(this, 'garlic-yield')">📈 Yield</button>
+  </div>
+
+  <!-- Tab Contents -->
+  <div id="garlic-soil" class="tab-content">
+    <h3 align="center">Optimal Soil & Nutrient Requirements</h3>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Optimal Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Nitrogen (N)</td><td>100–120 kg/ha</td></tr>
+          <tr><td>Phosphorus (P)</td><td>40–50 kg/ha</td></tr>
+          <tr><td>Potassium (K)</td><td>80–100 kg/ha</td></tr>
+          <tr><td>Sulphur (S)</td><td>30–40 kg/ha</td></tr>
+          <tr><td>Organic Carbon (OC)</td><td>≥ 0.75%</td></tr>
+          <tr><td>pH</td><td>6.0 – 7.0</td></tr>
+          <tr><td>EC</td><td>&lt; 1.0 dS/m</td></tr>
+          <tr><td>Zinc (Zn)</td><td>0.5 – 1.0 ppm</td></tr>
+          <tr><td>Iron (Fe)</td><td>3 – 6 ppm</td></tr>
+          <tr><td>Boron (B)</td><td>0.2 – 0.4 ppm</td></tr>
+          <tr><td>Rainfall</td><td>600 – 800 mm</td></tr>
+          <tr><td>Temperature</td><td>15°C – 25°C</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="garlic-season" class="tab-content" style="display:none;">
+    <h3>Best Planting Season</h3>
+    <ul>
+      <li><strong>Rabi:</strong> October–November (main season)</li>
+      <li><strong>Spring (Hills):</strong> March–April</li>
+    </ul>
+  </div>
+
+  <div id="garlic-pests" class="tab-content" style="display:none;">
+    <h3>Major Pests and Insects</h3>
+    <ul>
+      <li><strong>Thrips:</strong> Leaf curling, silvery streaks – Neem oil, Fipronil</li>
+      <li><strong>Cutworms:</strong> Cuts seedlings – Baiting, Quinalphos</li>
+      <li><strong>White Grubs:</strong> Root damage – Soil insecticide</li>
+      <li><strong>Aphids:</strong> Sticky leaves – Acetamiprid, Neem spray</li>
+      <li><strong>Leaf Miner:</strong> Tunnels in leaves – Spinosad</li>
+    </ul>
+  </div>
+
+  <div id="garlic-diseases" class="tab-content" style="display:none;">
+    <h3>Major Diseases & Control</h3>
+    <ul>
+      <li><strong>Purple Blotch:</strong> Purple spots – Mancozeb, Tebuconazole</li>
+      <li><strong>Stemphylium Leaf Blight:</strong> Brown lesions – Chlorothalonil</li>
+      <li><strong>Basal Rot:</strong> Rotting bulb – Proper drainage, Carbendazim</li>
+      <li><strong>Downy Mildew:</strong> Pale lesions – Metalaxyl spray</li>
+      <li><strong>Fusarium Wilt:</strong> Yellowing – Trichoderma, crop rotation</li>
+    </ul>
+  </div>
+
+  <div id="garlic-remedies" class="tab-content" style="display:none;">
+    <h3>Nutrient Correction (If Deficient)</h3>
+    <ul>
+      <li><strong>Nitrogen:</strong> Split urea in 2–3 doses</li>
+      <li><strong>Phosphorus:</strong> Basal SSP or DAP</li>
+      <li><strong>Potassium:</strong> MOP at basal + topdress</li>
+      <li><strong>Zinc:</strong> ZnSO₄ 0.5% spray</li>
+      <li><strong>Iron:</strong> Fe chelates or foliar spray</li>
+      <li><strong>Boron:</strong> Borax 0.2% foliar or 1 kg/ha</li>
+      <li><strong>Sulphur:</strong> Gypsum or elemental S</li>
+      <li><strong>Organic Matter:</strong> Compost, FYM before planting</li>
+      <li><strong>pH Fix:</strong> Lime or gypsum depending on pH</li>
+    </ul>
+  </div>
+
+  <div id="garlic-yield" class="tab-content" style="display:none;">
+    <h3>Price & Yield Estimates</h3>
+    <ul>
+      <li><strong>Yield:</strong> 100–150 qtl/ha</li>
+      <li><strong>Price:</strong> ₹2,000/qtl</li>
+      <li><strong>Revenue:</strong> ₹200,000 – ₹300,000/ha</li>
+      <li><strong>Cost:</strong> ₹100,000 – ₹140,000/ha</li>
+      <li><strong>Net Profit:</strong> ₹100,000 – ₹160,000/ha</li>
+    </ul>
+  </div>
+</section>
+
+<br><hr>
+    <footer>
+    &copy; 2025 Crops Agronomy Guide
+  </footer>
+</div>
+</main>
+
+<script>
+  function scrollToCrop() {
+    const cropId = document.getElementById("cropSelector").value;
+
+    // Hide all sections
+    const sections = document.querySelectorAll("main section");
+    sections.forEach(section => {
+      section.style.display = "none";
+      section.classList.remove("crop-card"); // remove animation class
+    });
+
+    // Hide default message initially
+    document.getElementById("defaultMessage").style.display = "none";
+
+    // Show selected crop section
+    if (cropId) {
+      const selected = document.getElementById(cropId);
+      if (selected) {
+        selected.style.display = "block";
+        // Trigger reflow to allow re-adding animation
+        void selected.offsetWidth;
+        selected.classList.add("crop-card"); // apply animation
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } else {
+      // If nothing selected, show default message
+      document.getElementById("defaultMessage").style.display = "block";
+    }
+  }
+
+  // On page load, ensure only default message is shown
+  window.onload = function() {
+    // Hide all crop sections
+    const sections = document.querySelectorAll("main section");
+    sections.forEach(section => {
+      section.style.display = "none";
+    });
+
+    // Check if a specific crop was passed from the route
+    const urlCropName = "{{ crop_name|default('') }}";
+    if (urlCropName) {
+      // Map crop names to selector values (handle case differences and special characters)
+      const cropMap = {
+        'sugarcane': 'sugarcane',
+        'cotton': 'cotton', 
+        'soyabean': 'soyabean',
+        'rice': 'rice',
+        'jowar': 'jowar',
+        'tur (pigeon pea)': 'tur',
+        'tur': 'tur',
+        'pigeon pea': 'tur',
+        'wheat': 'wheat',
+        'groundnut': 'groundnut',
+        'onion': 'onion',
+        'tomato': 'tomato',
+        'potato': 'potato',
+        'garlic': 'garlic'
+      };
+      
+      const normalizedCropName = urlCropName.toLowerCase().trim();
+      const cropId = cropMap[normalizedCropName];
+      
+      if (cropId) {
+        // Set the dropdown to the specific crop
+        document.getElementById("cropSelector").value = cropId;
+        // Show the specific crop section
+        scrollToCrop();
+      } else {
+        // Show default message if crop not found
+        document.getElementById("defaultMessage").style.display = "block";
+      }
+    } else {
+      // Show default message
+      document.getElementById("defaultMessage").style.display = "block";
+    }
+  };
+
+  function openTab(button, tabId) {
+    const section = button.closest("section");
+    const allTabs = section.querySelectorAll(".tab-content");
+    allTabs.forEach(tab => tab.style.display = "none");
+
+    const allButtons = section.querySelectorAll(".tabs button");
+    allButtons.forEach(btn => btn.classList.remove("active-tab"));
+
+    const selectedTab = section.querySelector(`#${tabId}`);
+    if (selectedTab) {
+      selectedTab.style.display = "block";
+    }
+
+    button.classList.add("active-tab");
+  }
+  
+</script>
+<!-- Chatbot Widget (initially hidden) -->
+<div class="agri-chatbot-widget" id="chatbot" style="display: none;">
+    <div class="chatbot-header">
+        <div class="bot-icon">
+          <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot Icon">
+        </div>
+        <div class="bot-info">
+            <h3>AgriBot AI</h3>
+            <p>Your farming assistant</p>
+        </div>
+        <div class="status-indicator"></div>
+        <button class="minimize-btn" onclick="toggleChatbot()">−</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="quick-suggestions">
+        <button class="suggestion-btn">Crop rotation</button>
+        <button class="suggestion-btn">Pest control</button>
+        <button class="suggestion-btn">Weather forecast</button>
+    </div>
+    <div class="chat-input-area">
+        <div class="input-container">
+            <input type="text" class="chat-input" placeholder="Ask about farming, crops, weather..." id="messageInput">
+            <button class="send-button" onclick="sendMessage()"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Toggle Button (initially visible) -->
+<button class="chatbot-toggle" id="chatbotToggle" onclick="toggleChatbot()" style="display: flex;">
+  <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot">
+</button>
+
+<script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+
+
+</body>
+</html>

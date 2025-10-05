@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='agriculture-chatbot-styles.css') }}">
+  <title>Farm–Ops AI</title>
+  <style>
+    /* Reset margin/padding */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Ensure background covers everything */
+    html {
+      background: url('{{ url_for('static', filename='images/landing-bg.jpg') }}') no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100%;
+    }
+
+    html,
+    body {
+      min-height: 100vh;
+      background: url('{{ url_for('static', filename='images/landing-bg.jpg') }}') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Codec Pro', sans-serif;
+      font-weight: bold;
+      color: #e8ff5a;
+    }
+
+    /* Background with overlay */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Remove the overlay */
+    .hero::before {
+      display: none;
+    }
+
+    /* Header */
+    header {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+    }
+
+    header .logo img {
+      height: 80px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    @media (max-width: 992px) {
+      header .logo img {
+        height: 65px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      header .logo img {
+        height: 50px;
+      }
+    }
+
+    nav {
+      display: flex;
+      gap: 10px;
+    }
+
+    nav button {
+      text-decoration: none;
+      color: #e8ff5a;
+      font-weight: bold;
+      padding: 10px 22px;
+      border-radius: 20px;
+      border: 2px solid #e8ff5a;
+      background: transparent;
+      transition: background 0.2s, color 0.2s;
+      cursor: pointer;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    nav button:hover {
+      background: #e8ff5a;
+      color: #222;
+      text-decoration: none;
+    }
+
+    /* Language Dropdown Styling */
+    .language-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .language-btn {
+      display: flex !important;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dropdown-arrow {
+      font-size: 0.8rem;
+      transition: transform 0.3s ease;
+    }
+
+    .language-dropdown.active .dropdown-arrow {
+      transform: rotate(180deg);
+    }
+
+    .language-dropdown-content {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: rgba(26, 26, 26, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(232, 255, 90, 0.3);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      min-width: 200px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+
+    .language-dropdown.active .language-dropdown-content {
+      display: block;
+      animation: dropdownSlide 0.3s ease;
+    }
+
+    .lang-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      color: #e8ff5a;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border-bottom: 1px solid rgba(232, 255, 90, 0.1);
+    }
+
+    .lang-option:last-child {
+      border-bottom: none;
+    }
+
+    .lang-option:hover {
+      background: rgba(232, 255, 90, 0.1);
+      color: #e8ff5a;
+      transform: translateX(5px);
+    }
+
+    .flag {
+      font-size: 1.2rem;
+    }
+
+    @keyframes dropdownSlide {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* Logout button specific styling */
+    .logout-btn {
+      border-color: #ff4757 !important;
+      color: #ff4757 !important;
+    }
+
+    .logout-btn:hover {
+      background: #ff4757 !important;
+      color: white !important;
+    }
+
+    /* Hero text */
+    .hero-text {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      margin-top: -60px;
+      padding-top: 40px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .hero-text h1 {
+      font-size: 5rem;
+      /* Increased from 3.5rem */
+      margin-bottom: 30px;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .buttons a {
+      text-decoration: none;
+      background: black;
+      color: #e8ff5a;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+
+    .buttons a:hover {
+      background: #333;
+    }
+
+    /* Footer */
+    footer {
+      background: rgba(0, 0, 0, 0.85);
+      color: #e8ff5a;
+      font-size: 14px;
+      padding: 10px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+    }
+
+    footer .left,
+    footer .center,
+    footer .right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    /* Fade-up animation for headings and hero text */
+    @keyframes fadeUpSoft {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero-text,
+    .hero-text h1,
+    section h2 {
+      opacity: 0;
+      animation: fadeUpSoft 1.2s cubic-bezier(.42, 0, .58, 1) forwards;
+    }
+
+    .hero-text {
+      animation-delay: 0.1s;
+    }
+
+    .hero-text h1 {
+      animation-delay: 0.2s;
+    }
+
+    section h2 {
+      animation-delay: 0.3s;
+    }
+
+    /* Buttons: soft glow on hover */
+    .buttons a,
+    nav button {
+      transition: background 0.3s, color 0.3s, box-shadow 0.3s, transform 0.2s;
+    }
+
+    .buttons a:hover,
+    nav button:hover {
+      box-shadow: 0 0 12px #e8ff5a, 0 0 8px #2e7d32;
+      background: #222;
+      color: #e8ff5a;
+      transform: scale(1.05);
+    }
+
+    /* Remove previous animation styles if present */
+    .hero-text h1,
+    .buttons a,
+    nav button,
+    section h2 {
+      text-shadow: none;
+      box-shadow: none;
+      letter-spacing: normal;
+      transition: background 0.3s,
+        color 0.3s,
+        transform 0.2s;
+    }
+
+    .buttons a:hover,
+    nav button:hover {
+      transform: scale(1.03);
+    }
+
+    .agri-chatbot-widget {
+      position: fixed;
+      bottom: 120px;
+      /* Increased from 90px */
+      right: 20px;
+      width: 320px;
+      max-height: 500px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      padding-bottom: 40px;
+      /* Add space at bottom to avoid overlap with footer */
+      z-index: 1000;
+      font-family: 'Poppins', sans-serif;
+      color: #333;
+    }
+
+    /* Toggle Button (initially visible) */
+    .chatbot-toggle {
+      position: fixed;
+      bottom: 110px;
+      /* Increased from 80px */
+      right: 20px;
+      /* ...existing styles... */
+    }
+
+    /* Fixed Hovering Button Bottom Left */
+    .fixed-bottom-left-btn {
+      position: fixed;
+      left: 20px;
+      bottom: 110px;
+      z-index: 1200;
+      background: #e8ff5a;
+      color: #fffde4;
+      border: none;
+      border-radius: 50%;
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 18px #43a04744;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.18s;
+      opacity: 0.95;
+      padding: 0;
+    }
+
+    .fixed-bottom-left-btn img {
+      width: 28px;
+      height: 28px;
+      display: block;
+    }
+
+    .fixed-bottom-left-btn:hover {
+      background: #e8ff5a;
+      color: #388e3c;
+      box-shadow: 0 8px 24px #388e3c;
+      transform: scale(1.08);
+    }
+
+    @media (max-width: 700px) {
+      .fixed-bottom-left-btn {
+        left: 10px;
+        bottom: 90px;
+        width: 44px;
+        height: 44px;
+      }
+
+      .fixed-bottom-left-btn img {
+        width: 22px;
+        height: 22px;
+      }
+    }
+
+    .about-glass-card {
+      max-width: 1000px;
+      margin: 50px auto 80px auto;
+      background: rgba(255, 255, 255, 0.13);
+      border-radius: 32px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      border: 1.5px solid rgba(232, 255, 90, 0.18);
+      padding: 44px 32px 38px 32px;
+      color: #e8ff5a;
+      text-align: left;
+      position: relative;
+      z-index: 10;
+      margin-bottom: 120px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="hero" id="home">
+    <header>
+      <div class="logo">
+        <img src="{{ url_for('static', filename='images/farmops_logo.png') }}" alt="FarmOps Logo">
+      </div>
+      <nav>
+        <button class="nav-btn" data-target="home"><span data-translate="nav.home">HOME</span></button>
+        <div class="language-dropdown">
+          <button class="nav-btn language-btn" id="languageBtn">
+            <span data-translate="nav.language">SELECT LANGUAGE</span> <span class="dropdown-arrow">▼</span>
+          </button>
+          <div class="language-dropdown-content" id="languageDropdown">
+            <a href="javascript:void(0)" onclick="changeLanguage('en')" class="lang-option">
+              <span class="flag">🇺🇸</span> English
+            </a>
+            <a href="javascript:void(0)" onclick="changeLanguage('hi')" class="lang-option">
+              <span class="flag">🇮🇳</span> हिंदी
+            </a>
+            <a href="javascript:void(0)" onclick="changeLanguage('mr')" class="lang-option">
+              <span class="flag">🇮🇳</span> मराठी
+            </a>
+            <a href="javascript:void(0)" onclick="changeLanguage('gu')" class="lang-option">
+              <span class="flag">🇮🇳</span> ગુજરાતી
+            </a>
+            <a href="javascript:void(0)" onclick="changeLanguage('pa')" class="lang-option">
+              <span class="flag">🇮🇳</span> ਪੰਜਾਬੀ
+            </a>
+            <a href="javascript:void(0)" onclick="changeLanguage('ta')" class="lang-option">
+              <span class="flag">🇮🇳</span> தமிழ்
+            </a>
+            <a href="javascript:void(0)" onclick="changeLanguage('te')" class="lang-option">
+              <span class="flag">🇮🇳</span> తెలుగు
+            </a>
+            <a href="javascript:void(0)" onclick="changeLanguage('kn')" class="lang-option">
+              <span class="flag">🇮🇳</span> ಕನ್ನಡ
+            </a>
+            <a href="javascript:void(0)" onclick="changeLanguage('bn')" class="lang-option">
+              <span class="flag">🇮🇳</span> বাংলা
+            </a>
+          </div>
+        </div>
+        <button class="nav-btn" onclick="window.location.href='/features'"><span data-translate="nav.solutions">SOLUTIONS</span></button>
+        <button class="nav-btn" onclick="window.location.href='/feedback'"><span data-translate="nav.feedback">FEEDBACK</span></button>
+        <button class="nav-btn logout-btn" onclick="window.location.href='/logout'"><span data-translate="nav.logout">LOGOUT</span></button>
+      </nav>
+    </header>
+    <div class="hero-text">
+      <h1><span data-translate="hero.title">Crop Intelligence Advisor</span></h1>
+      <div class="buttons">
+        <a href="/features"><span data-translate="hero.explore">EXPLORE FARMING SOLUTIONS</span></a>
+        <a href="#" data-target="about"><span data-translate="hero.about">ABOUT US</span></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- About Us Section -->
+  <section id="about" style="background: none; padding: 0; margin: 0;">
+    <div class="about-glass-card">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+        <img src="{{ url_for('static', filename='images/farmops_logo.png') }}" alt="FarmOps Logo" style="height: 38px; width: auto;">
+        <span style="font-size: 1.25rem; font-weight: 800; color: #e8ff5a; letter-spacing: 1.5px;">FARM OPS</span>
+      </div>
+      <h2 style="
+        font-size: 2.4rem;
+        font-weight: 900;
+        margin: 0 0 18px 0;
+        color: #e8ff5a;
+        letter-spacing: 1.5px;
+        text-shadow: 0 2px 12px rgba(232, 255, 90, 0.4);
+      "><span data-translate="about.title">About Us</span></h2>
+      <p style="font-size: 1.13rem; color: #e8ff5a; margin-bottom: 18px; line-height: 1.7;">
+        <span data-translate="about.description1">At Farm Ops, we blend agriculture with smart technology to make farming efficient, profitable, and sustainable.
+        Our AI-powered platform offers crop suitability prediction and GPS-based land suggestions to help farmers choose the right crops and maximize land use.
+        With localized insights and a smart planner, farmers receive region-specific guidance and timely planning support.</span>
+      </p>
+      <p style="font-size: 1.13rem; color: #e8ff5a; margin-bottom: 18px; line-height: 1.7;">
+        <span data-translate="about.description2">Beyond cultivation, we provide market (mandi) guidance for better pricing decisions and expert consultation for personalized solutions.
+        What makes us unique is our multilingual chatbot, accessible via text and voice in regional languages, delivering advice on pest &amp; disease management, weather updates, and government schemes with ease.</span>
+      </p>
+      <div style="background:rgba(232,255,90,0.13);border-radius:18px;padding:18px 20px 14px 20px;margin-top:18px;">
+        <span style="font-size:1.08rem;color:#e8ff5a;font-weight:700;">
+          <span data-translate="about.commitment">Farm Ops is committed to empowering every farmer — big or small — with tools that simplify decisions, increase productivity, and build a smarter, more inclusive future for agriculture.</span>
+        </span>
+      </div>
+    </div>
+  </section>
+
+
+  <footer>
+    <div class="left"><span>farmops@gmail.com</span></div>
+    <div class="right"><span>+91 1234567890</span></div>
+  </footer>
+
+  <!-- Chatbot Widget (initially hidden) -->
+  <div class="agri-chatbot-widget" id="chatbot" style="display: none;">
+    <div class="chatbot-header">
+      <div class="bot-icon">
+        <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot Icon">
+      </div>
+      <div class="bot-info">
+        <h3>AgriBot AI</h3>
+        <p>Your farming assistant</p>
+      </div>
+      <div class="status-indicator"></div>
+      <button class="minimize-btn" onclick="toggleChatbot()">−</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="quick-suggestions">
+      <button class="suggestion-btn">Crop rotation</button>
+      <button class="suggestion-btn">Pest control</button>
+      <button class="suggestion-btn">Weather forecast</button>
+    </div>
+    <div class="chat-input-area">
+      <div class="input-container">
+        <input type="text" class="chat-input" placeholder="Ask about farming, crops, weather..." id="messageInput">
+        <button class="send-button" onclick="sendMessage()"></button>
+      </div>
+    </div>
+  </div>
+  <!-- Toggle Button (initially visible) -->
+  <button class="chatbot-toggle" id="chatbotToggle" onclick="toggleChatbot()" style="display: flex;">
+    <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot">
+  </button>
+
+  <!-- Fixed Hovering Button Bottom Left -->
+  <button class="fixed-bottom-left-btn">
+    <img src="{{ url_for('static', filename='images/mic.png') }}" alt="Feedback">
+  </button>
+
+  <!-- Global Translation System -->
+  <script src="{{ url_for('static', filename='global-translations.js') }}"></script>
+  
+  <script>
+    // Page-specific initialization - using global translation system
+    console.log('Main page loaded - Global translation system active');
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log('DOM loaded - Setting up global translation system');
+      
+      // Initialize global translation system
+      if (typeof GlobalTranslationSystem !== 'undefined') {
+        const translationSystem = new GlobalTranslationSystem();
+        
+        // Make changeLanguage available globally for the dropdown
+        window.changeLanguage = function(language) {
+          translationSystem.changeLanguage(language);
+          
+          // Update dropdown to show current selection
+          const languageSelect = document.getElementById('languageSelect');
+          if (languageSelect) {
+            languageSelect.value = language;
+          }
+          
+          // Close dropdown
+          const dropdown = document.querySelector('.language-dropdown');
+          if (dropdown) {
+            dropdown.classList.remove('active');
+          }
+        };
+        
+        // Initialize with saved language
+        translationSystem.initialize();
+        
+        // Update dropdown to show current selection
+        const savedLanguage = localStorage.getItem('selectedLanguage') || 'en';
+        const languageSelect = document.getElementById('languageSelect');
+        if (languageSelect) {
+          languageSelect.value = savedLanguage;
+        }
+        
+        console.log('Global translation system initialized');
+      } else {
+        console.error('GlobalTranslationSystem not found - check if global-translations.js is loaded');
+      }
+      
+      // Language dropdown toggle
+      const languageBtn = document.getElementById('languageBtn');
+      if (languageBtn) {
+        languageBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const dropdown = document.querySelector('.language-dropdown');
+          dropdown.classList.toggle('active');
+        });
+      }
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('.language-dropdown')) {
+          const dropdown = document.querySelector('.language-dropdown');
+          if (dropdown) {
+            dropdown.classList.remove('active');
+          }
+        }
+      });
+      
+      console.log('Language system setup complete');
+      
+      // Handle navigation buttons
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+          const targetId = this.getAttribute('data-target');
+          const section = document.getElementById(targetId);
+          if (section) {
+            e.preventDefault();
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      });
+      
+      // Handle main buttons (ABOUT US button)
+      document.querySelectorAll('a[data-target]').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+          const targetId = this.getAttribute('data-target');
+          const section = document.getElementById(targetId);
+          if (section) {
+            e.preventDefault();
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      });
+    });
+  </script>
+  <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+</body>
+
+</html>

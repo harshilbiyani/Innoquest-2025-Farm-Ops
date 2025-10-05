@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💧 Water Recommendation - {{ crop_name.title() }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='agriculture-chatbot-styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="{{ url_for('static', filename='global-translations.js') }}"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { height: 100%; font-family: 'Poppins', sans-serif; }
+        
+        .bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar h1 {
+            color: white;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+        }
+        
+        .back-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .main-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .crop-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .crop-subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        
+        .input-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .input-group label {
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .input-group select,
+        .input-group input {
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .input-group select:focus,
+        .input-group input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .calculate-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+        }
+        
+        .calculate-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .result-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .result-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2980b9;
+            margin-bottom: 5px;
+        }
+        
+        .result-label {
+            color: #7f8c8d;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .detailed-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .detail-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #3498db;
+        }
+        
+        .detail-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .schedule-item {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid #27ae60;
+        }
+        
+        .tip-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .tip-item span {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .cost-breakdown {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .efficiency-alert {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            color: #0c5460;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .crop-title { font-size: 2rem; }
+            .input-grid { grid-template-columns: 1fr; }
+            .results-grid { grid-template-columns: 1fr; }
+            .detailed-results { grid-template-columns: 1fr; }
+            .main-card { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg">
+        <!-- Navigation -->
+        <div class="navbar">
+            <div class="navbar-content">
+                <h1>💧 Water Management System</h1>
+                <button class="back-button" onclick="goBack()">← Back to Crops</button>
+            </div>
+        </div>
+        
+        <div class="container">
+            <div class="main-card">
+                <!-- Header Section -->
+                <div class="header-section">
+                    <h1 class="crop-title">{{ crop_name.title() }} Water Requirements</h1>
+                    <p class="crop-subtitle">Calculate precise water needs based on your land area and farming conditions</p>
+                </div>
+                
+                <!-- Input Section -->
+                <div class="input-section">
+                    <form id="waterCalculationForm">
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label for="landArea">🌾 Land Area (Hectares)</label>
+                                <input type="number" id="landArea" name="land_area" min="0.1" max="1000" step="0.1" value="1" required>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="growthStage">🌱 Growth Stage</label>
+                                <select id="growthStage" name="growth_stage" required>
+                                    <option value="vegetative">Vegetative Growth</option>
+                                    <option value="flowering">Flowering/Reproductive</option>
+                                    <option value="maturity">Maturity/Harvest</option>
+                                </select>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="soilType">🏔️ Soil Type</label>
+                                <select id="soilType" name="soil_type" required>
+                                    <option value="loamy">Loamy (Ideal)</option>
+                                    <option value="sandy">Sandy</option>
+                                    <option value="clay">Clay</option>
+                                    <option value="black_cotton">Black Cotton</option>
+                                    <option value="red_soil">Red Soil</option>
+                                    <option value="sandy_dry">Sandy Dry</option>
+                                    <option value="laterite">Laterite</option>
+                                </select>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="season">🌤️ Growing Season</label>
+                                <select id="season" name="season" required>
+                                    <option value="kharif">Kharif (Monsoon)</option>
+                                    <option value="rabi">Rabi (Winter)</option>
+                                    <option value="summer">Summer</option>
+                                </select>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="irrigationMethod">💧 Irrigation Method</label>
+                                <select id="irrigationMethod" name="irrigation_method" required>
+                                    <option value="drip">Drip Irrigation (Most Efficient)</option>
+                                    <option value="sprinkler">Sprinkler System</option>
+                                    <option value="furrow">Furrow Irrigation</option>
+                                    <option value="flood">Flood Irrigation</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="location">📍 Location (Optional)</label>
+                                <input type="text" id="location" name="location" placeholder="e.g. Pune, Maharashtra">
+                                <small style="color: #666; font-size: 0.85rem;">For weather-based recommendations</small>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 15px; margin-top: 20px;">
+                            <button type="submit" class="calculate-btn" id="calculateBtn" style="flex: 1;">
+                                💧 Calculate Water Requirements
+                            </button>
+                            <button type="button" class="calculate-btn" id="moistureGuideBtn" style="flex: 1; background: linear-gradient(135deg, #27ae60, #2ecc71);">
+                                🌱 Soil Moisture Guide
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Loading Section -->
+                <div id="loadingSection" class="loading" style="display: none;">
+                    <p>🔄 Calculating optimal water requirements...</p>
+                </div>
+                
+                <!-- Error Section -->
+                <div id="errorSection" class="error" style="display: none;"></div>
+                
+                <!-- Results Section -->
+                <div id="resultsSection" class="results-section">
+                    <!-- Quick Results -->
+                    <div class="results-grid" id="quickResults"></div>
+                    
+                    <!-- Detailed Results -->
+                    <div class="detailed-results" id="detailedResults"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('waterCalculationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                crop_name: '{{ crop_name.lower() }}',
+                land_area: parseFloat(formData.get('land_area')),
+                growth_stage: formData.get('growth_stage'),
+                soil_type: formData.get('soil_type'),
+                season: formData.get('season'),
+                irrigation_method: formData.get('irrigation_method')
+            };
+            
+            // Show loading
+            document.getElementById('loadingSection').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('errorSection').style.display = 'none';
+            document.getElementById('calculateBtn').disabled = true;
+            
+            try {
+                const response = await fetch('/api/calculate-water-requirement', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayResults(result.water_data);
+                } else {
+                    showError(result.error || 'Failed to calculate water requirements');
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+                console.error('Error:', error);
+            } finally {
+                document.getElementById('loadingSection').style.display = 'none';
+                document.getElementById('calculateBtn').disabled = false;
+            }
+        });
+        
+        function displayResults(data) {
+            // Quick Results
+            const quickResults = document.getElementById('quickResults');
+            quickResults.innerHTML = `
+                <div class="result-card">
+                    <div class="result-value">${formatNumber(data.water_requirements.daily_liters)}</div>
+                    <div class="result-label">Liters per Day</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-value">${formatNumber(data.water_requirements.weekly_liters)}</div>
+                    <div class="result-label">Liters per Week</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-value">${formatNumber(data.water_requirements.monthly_liters)}</div>
+                    <div class="result-label">Liters per Month</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-value">₹${data.cost_estimate.daily_cost}</div>
+                    <div class="result-label">Daily Cost</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-value">${Math.round(data.water_requirements.daily_liters * 0.264)}</div>
+                    <div class="result-label">Gallons per Day</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-value">${Math.round(data.water_requirements.daily_liters / data.land_area)}</div>
+                    <div class="result-label">Liters per Hectare</div>
+                </div>
+            `;
+            
+            // Detailed Results
+            const detailedResults = document.getElementById('detailedResults');
+            detailedResults.innerHTML = `
+                <div class="detail-card">
+                    <h3>📅 Irrigation Schedule</h3>
+                    <div class="schedule-item">
+                        <strong>Frequency:</strong> ${data.irrigation_schedule.frequency}
+                    </div>
+                    <div class="schedule-item">
+                        <strong>Duration:</strong> ${data.irrigation_schedule.duration}
+                    </div>
+                    <div class="schedule-item">
+                        <strong>Best Time:</strong> ${data.irrigation_schedule.best_time}
+                    </div>
+                    <div class="schedule-item">
+                        <strong>Weekly Sessions:</strong> ${data.irrigation_schedule.weekly_sessions}
+                    </div>
+                    <div style="margin-top: 15px; padding: 10px; background: #e8f5e8; border-radius: 8px;">
+                        <strong>Stage Note:</strong> ${data.irrigation_schedule.stage_note}
+                    </div>
+                    <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 8px;">
+                        <strong>Special Instructions:</strong> ${data.irrigation_schedule.special_instructions}
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <h3>💡 Water Conservation Tips</h3>
+                    ${data.conservation_tips.map(tip => `
+                        <div class="tip-item">
+                            <span>${tip.split(' ')[0]}</span>
+                            <div>${tip.substring(tip.indexOf(' ') + 1)}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="detail-card">
+                    <h3>💰 Cost Analysis</h3>
+                    <div class="cost-breakdown">
+                        <p><strong>Daily Cost:</strong> ₹${data.cost_estimate.daily_cost}</p>
+                        <p><strong>Monthly Cost:</strong> ₹${data.cost_estimate.monthly_cost}</p>
+                        <p><strong>Rate:</strong> ₹${data.cost_estimate.cost_per_1000l} per 1000 liters</p>
+                        <p><strong>Season Total:</strong> ₹${(data.cost_estimate.monthly_cost * 4).toFixed(2)}</p>
+                    </div>
+                    
+                    ${data.efficiency_data.water_saved_with_drip > 0 ? `
+                        <div class="efficiency-alert">
+                            <h4>💧 Efficiency Improvement Opportunity</h4>
+                            <p><strong>Water Savings with Drip:</strong> ${formatNumber(data.efficiency_data.water_saved_with_drip)} liters/day</p>
+                            <p><strong>Cost Savings:</strong> ₹${data.efficiency_data.cost_saved_with_drip}/day</p>
+                            <p><strong>Current Efficiency:</strong> ${data.efficiency_data.method_efficiency}</p>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div class="detail-card">
+                    <h3>🌱 Critical Growth Stages</h3>
+                    <p style="margin-bottom: 15px;">Pay extra attention during these stages:</p>
+                    ${data.critical_stages.map(stage => `
+                        <div class="schedule-item">
+                            ${stage.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="detail-card">
+                    <h3>📊 Water Requirement Breakdown</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <p><strong>Per Hectare Daily:</strong><br>${formatNumber(data.water_requirements.daily_per_hectare)} L</p>
+                        </div>
+                        <div>
+                            <p><strong>Total for ${data.land_area} ha:</strong><br>${formatNumber(data.water_requirements.daily_liters)} L</p>
+                        </div>
+                        <div>
+                            <p><strong>Season Total:</strong><br>${formatNumber(data.water_requirements.season_total_liters)} L</p>
+                        </div>
+                        <div>
+                            <p><strong>Growing Conditions:</strong><br>${data.soil_type} + ${data.season}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('resultsSection').style.display = 'block';
+        }
+        
+        function showError(message) {
+            const errorSection = document.getElementById('errorSection');
+            errorSection.textContent = '❌ Error: ' + message;
+            errorSection.style.display = 'block';
+        }
+        
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            } else {
+                return num.toLocaleString();
+            }
+        }
+        
+        function goBack() {
+            window.history.back();
+        }
+        
+        // Soil Moisture Guide Button
+        document.getElementById('moistureGuideBtn').addEventListener('click', async function() {
+            const cropName = '{{ crop_name.lower() }}';
+            
+            try {
+                const response = await fetch(`/api/soil-moisture-guide/${cropName}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMoistureGuide(result);
+                } else {
+                    showError('Failed to load soil moisture guide');
+                }
+            } catch (error) {
+                showError('Network error loading moisture guide');
+            }
+        });
+        
+        function showMoistureGuide(data) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5); z-index: 1000; display: flex;
+                align-items: center; justify-content: center; padding: 20px;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: white; border-radius: 15px; padding: 30px;
+                max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto;
+            `;
+            
+            content.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color: #2c3e50; margin: 0;">🌱 ${data.crop} Soil Moisture Guide</h2>
+                    <button onclick="this.closest('div').remove()" style="background: #e74c3c; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">×</button>
+                </div>
+                
+                <div style="background: #e8f5e8; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                    <h3 style="color: #27ae60; margin-bottom: 10px;">Optimal Moisture Requirements</h3>
+                    <p><strong>Optimal Range:</strong> ${data.moisture_requirements.optimal_range} field capacity</p>
+                    <p><strong>Critical Threshold:</strong> ${data.moisture_requirements.critical_threshold}</p>
+                    <p><strong>Method:</strong> ${data.moisture_requirements.method}</p>
+                    <p><strong>Monitoring Depth:</strong> ${data.moisture_requirements.monitoring_depth}</p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">Simple Monitoring Techniques</h3>
+                    ${data.monitoring_tips.map(tip => `
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #3498db;">
+                            ${tip}
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div>
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">When to Irrigate - Warning Signs</h3>
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="color: #7f8c8d; margin-bottom: 10px;">General Signs:</h4>
+                        ${data.irrigation_indicators.general_signs.map(sign => `
+                            <div style="background: #fff3cd; padding: 8px; border-radius: 6px; margin-bottom: 6px;">
+                                ${sign}
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    ${data.irrigation_indicators.crop_specific_signs.length > 0 ? `
+                        <div>
+                            <h4 style="color: #7f8c8d; margin-bottom: 10px;">${data.crop}-Specific Signs:</h4>
+                            ${data.irrigation_indicators.crop_specific_signs.map(sign => `
+                                <div style="background: #ffeaa7; padding: 8px; border-radius: 6px; margin-bottom: 6px;">
+                                    ${sign}
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            // Close on background click
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+        
+        // Auto-calculate on page load with default values
+        window.addEventListener('load', function() {
+            // Set reasonable defaults based on crop
+            const cropName = '{{ crop_name.lower() }}';
+            
+            // Set season based on crop
+            const seasonSelect = document.getElementById('season');
+            if (['rice', 'cotton', 'soybean'].includes(cropName)) {
+                seasonSelect.value = 'kharif';
+            } else if (['wheat', 'potato', 'garlic'].includes(cropName)) {
+                seasonSelect.value = 'rabi';
+            }
+            
+            // Set irrigation method based on crop
+            const irrigationSelect = document.getElementById('irrigationMethod');
+            if (['tomato', 'onion'].includes(cropName)) {
+                irrigationSelect.value = 'drip';
+            } else if (cropName === 'rice') {
+                irrigationSelect.value = 'flood';
+            }
+            
+            // Auto-detect location if possible
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    // In production, you would reverse geocode these coordinates
+                    document.getElementById('location').placeholder = 'Location detected...';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

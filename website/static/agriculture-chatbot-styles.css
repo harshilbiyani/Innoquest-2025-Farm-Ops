@@ -1,0 +1,356 @@
+/* Agriculture AI Chatbot Widget - CSS Styles */
+
+/* Main chatbot container */
+.agri-chatbot-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 350px;
+    height: 500px;
+    background: linear-gradient(135deg, #f8fffe 0%, #e8f5e8 100%);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(76, 175, 80, 0.15);
+    border: 2px solid rgba(76, 175, 80, 0.2);
+    display: flex;
+    flex-direction: column;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+.agri-chatbot-widget:hover {
+    box-shadow: 0 12px 40px rgba(76, 175, 80, 0.25);
+}
+/* Header section */
+.chatbot-header {
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+    padding: 20px;
+    border-radius: 18px 18px 0 0;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.chatbot-header .bot-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    overflow: hidden;
+}
+
+.chatbot-header .bot-icon img {
+    width: 28px;
+    height: 28px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+.chatbot-header .bot-info h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+.chatbot-header .bot-info p {
+    margin: 2px 0 0 0;
+    font-size: 12px;
+    opacity: 0.9;
+}
+/* Chat messages area */
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.chat-messages::-webkit-scrollbar {
+    width: 4px;
+}
+.chat-messages::-webkit-scrollbar-track {
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 2px;
+}
+.chat-messages::-webkit-scrollbar-thumb {
+    background: rgba(76, 175, 80, 0.3);
+    border-radius: 2px;
+}
+/* Message bubbles */
+.message {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.4;
+    position: relative;
+}
+.message.bot {
+    align-self: flex-start;
+    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+    color: #1b5e20;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+}
+.message.user {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+    color: white;
+}
+.message.bot::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background: #4caf50;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+}
+/* Quick suggestion buttons */
+.quick-suggestions {
+    padding: 0 20px 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.suggestion-btn {
+    background: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    color: #2e7d32;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.suggestion-btn:hover {
+    background: rgba(76, 175, 80, 0.2);
+    border-color: #4caf50;
+}
+.suggestion-btn::before {
+    content: '🌾';
+    margin-right: 4px;
+}
+/* Input area */
+.chat-input-area {
+    padding: 20px;
+    border-top: 1px solid rgba(76, 175, 80, 0.2);
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 0 0 18px 18px;
+}
+.input-container {
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 25px;
+    padding: 4px;
+    border: 2px solid rgba(76, 175, 80, 0.2);
+    transition: border-color 0.2s ease;
+}
+.input-container:focus-within {
+    border-color: #4caf50;
+}
+.chat-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 12px 16px;
+    font-size: 14px;
+    background: transparent;
+    color: #333;
+}
+.chat-input::placeholder {
+    color: rgba(76, 175, 80, 0.7);
+}
+.send-button {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+.send-button:hover {
+    background: linear-gradient(135deg, #45a049 0%, #1b5e20 100%);
+    transform: scale(1.05);
+}
+.send-button::before {
+    content: '➤';
+}
+/* Minimize button */
+.minimize-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+.minimize-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+/* Toggle button (when minimized) */
+.chatbot-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 4px 16px rgba(76, 175, 80, 0.4);
+    z-index: 1000;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+.chatbot-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
+}
+.chatbot-toggle img {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+/* Responsive design */
+@media (max-width: 768px) {
+    .agri-chatbot-widget {
+        width: 320px;
+        height: 450px;
+        bottom: 10px;
+        right: 10px;
+    }
+    .chatbot-header {
+        padding: 16px;
+    }
+    .chat-messages {
+        padding: 16px;
+    }
+    .chat-input-area {
+        padding: 16px;
+    }
+}
+@media (max-width: 480px) {
+    .agri-chatbot-widget {
+        width: calc(100vw - 20px);
+        height: 400px;
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+    }
+    .chatbot-toggle {
+        bottom: 15px;
+        right: 15px;
+    }
+}
+/* Animation classes */
+.fade-in {
+    animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.slide-up {
+    animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+    from { transform: translateY(20px) scale(0.9); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+/* Typing indicator */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 16px;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 18px;
+    color: #4caf50;
+    font-size: 14px;
+}
+.typing-dots {
+    display: flex;
+    gap: 2px;
+}
+.typing-dots span {
+    width: 6px;
+    height: 6px;
+    background: #4caf50;
+    border-radius: 50%;
+    animation: typing 1.4s infinite;
+}
+.typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+.typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+@keyframes typing {
+    0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
+    30% { opacity: 1; transform: scale(1); }
+}
+/* Agricultural themed decorations */
+.agri-chatbot-widget::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #4caf50, #8bc34a, #cddc39, #4caf50);
+    border-radius: 22px;
+    z-index: -1;
+    opacity: 0.3;
+    animation: borderGlow 3s ease-in-out infinite alternate;
+}
+@keyframes borderGlow {
+    0% { opacity: 0.2; }
+    100% { opacity: 0.4; }
+}
+/* Status indicator */
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    background: #4caf50;
+    border-radius: 50%;
+    position: absolute;
+    top: 25px;
+    right: 50px;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+}

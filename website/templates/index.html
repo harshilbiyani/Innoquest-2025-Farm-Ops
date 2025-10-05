@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crop Prediction Tool - FarmOps</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='agriculture-chatbot-styles.css') }}">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Ensure no global blur effects */
+    html, body {
+      backdrop-filter: none !important;
+      filter: none !important;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      position: relative;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: #333;
+      background-size: cover;
+    }
+
+    /* Background Video */
+    #bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+      opacity: 1;
+    }
+
+    /* Background Overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(0,0,0,0.2), rgba(0,100,0,0.1));
+      z-index: -1;
+      backdrop-filter: none !important;
+      filter: none !important;
+    }
+
+    /* Animated Keyframes */
+    @keyframes fadeUpSoft {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInFromLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% {
+        box-shadow: 0 0 5px rgba(232, 255, 90, 0.5);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(232, 255, 90, 0.8);
+      }
+    }
+
+    /* Header Styling */
+    header {
+      background: transparent;
+      padding: 50px 20px;
+      text-align: center;
+      position: relative;
+      z-index: 1000;
+      animation: fadeUpSoft 1s ease-out;
+      margin-bottom: 20px;
+    }
+
+    /* Title container with glassmorphism */
+    .title-container {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 20px;
+      padding: 30px 50px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      margin-bottom: 20px;
+      animation: fadeUpSoft 1.2s ease-out;
+    }
+
+    header h1 {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 2.5rem;
+      font-weight: 900;
+      text-align: center;
+      margin: 1.5rem 0 1.6rem 0;
+      letter-spacing: 2.2px;
+      line-height: 1.18;
+      text-shadow: 0 5px 18px #a5ff4e55, 0px 1px 1px #3e892b17;
+      background: linear-gradient(135deg, #e8ff5a, #b2ff00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: fadeUpSoft 1.4s ease-out;
+    }
+
+    header p {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1.2rem;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      animation: fadeUpSoft 1.6s ease-out;
+      font-weight: 400;
+      line-height: 1.5;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .back-button {
+      position: absolute;
+      top: 25px;
+      left: 25px;
+      background: rgba(232, 255, 90, 0.9);
+      color: #1a1a1a;
+      padding: 12px 20px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      animation: slideInFromLeft 1s ease-out;
+      font-size: 14px;
+    }
+
+    .back-button:hover {
+      background: #e8ff5a;
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 5px 15px rgba(232, 255, 90, 0.4);
+    }
+
+    /* Glassmorphism Containers */
+    .dropdown-container {
+      max-width: 700px;
+      margin: 40px auto;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      animation: fadeUpSoft 1.6s ease-out;
+    }
+
+    .dropdown-container label {
+      display: block;
+      margin: 20px 0 8px;
+      font-weight: bold;
+      color: #e8ff5a;
+      font-size: 1.1rem;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+    .dropdown-container select {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid rgba(232, 255, 90, 0.3);
+      border-radius: 12px;
+      font-size: 16px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+    .dropdown-container select:focus {
+      outline: none;
+      border-color: #e8ff5a;
+      box-shadow: 0 0 15px rgba(232, 255, 90, 0.3);
+    }
+
+    .dropdown-container select option {
+      background: rgba(26, 26, 26, 0.9);
+      color: white;
+      padding: 10px;
+    }
+
+    #predictBtn {
+      width: 100%;
+      margin-top: 25px;
+      background: linear-gradient(135deg, #e8ff5a, #b2ff00);
+      color: #1a1a1a;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #predictBtn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(232, 255, 90, 0.4);
+      animation: pulseGlow 2s infinite;
+    }
+
+    /* Results Section */
+    #cropResults {
+      max-width: 1000px;
+      margin: 40px auto;
+      background: transparent;
+      border-radius: 20px;
+      padding: 30px;
+      animation: fadeUpSoft 1.8s ease-out;
+    }
+
+    #cropResults h3 {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      text-align: center;
+      margin: 1.5rem 0 1.6rem 0;
+      letter-spacing: 2.2px;
+      line-height: 1.18;
+      text-shadow: 0 5px 18px #a5ff4e55, 0px 1px 1px #3e892b17;
+      background: linear-gradient(135deg, #e8ff5a, #b2ff00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    #cropResults h4 {
+      color: #e8ff5a;
+      margin: 30px 0 15px;
+      font-size: 1.5rem;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      font-weight: 600;
+    }
+
+    .crop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      margin: 25px 0;
+    }
+
+    .crop-card {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 25px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Tinted backgrounds for different suitability levels */
+    .crop-card.highly-suitable {
+      background: rgba(76, 175, 80, 0.2) !important;
+      border-color: rgba(76, 175, 80, 0.4);
+    }
+
+    .crop-card.moderately-suitable {
+      background: rgba(255, 193, 7, 0.2) !important;
+      border-color: rgba(255, 193, 7, 0.4);
+    }
+
+    .crop-card.not-suitable {
+      background: rgba(244, 67, 54, 0.2) !important;
+      border-color: rgba(244, 67, 54, 0.4);
+    }
+
+    .crop-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 15px 40px rgba(232, 255, 90, 0.3);
+      border-color: rgba(232, 255, 90, 0.5);
+    }
+
+    .crop-card.highly-suitable:hover {
+      background: rgba(76, 175, 80, 0.3) !important;
+      box-shadow: 0 15px 40px rgba(76, 175, 80, 0.4);
+      border-color: rgba(76, 175, 80, 0.6);
+    }
+
+    .crop-card.moderately-suitable:hover {
+      background: rgba(255, 193, 7, 0.3) !important;
+      box-shadow: 0 15px 40px rgba(255, 193, 7, 0.4);
+      border-color: rgba(255, 193, 7, 0.6);
+    }
+
+    .crop-card.not-suitable:hover {
+      background: rgba(244, 67, 54, 0.3) !important;
+      box-shadow: 0 15px 40px rgba(244, 67, 54, 0.4);
+      border-color: rgba(244, 67, 54, 0.6);
+    }
+
+    .crop-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #e8ff5a, #b2ff00);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .crop-card:hover::before {
+      opacity: 1;
+    }
+
+    .crop-icon {
+      width: 90px;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 50%;
+      margin-bottom: 15px;
+      border: 3px solid #e8ff5a;
+      transition: all 0.3s ease;
+    }
+
+    .crop-card:hover .crop-icon {
+      transform: scale(1.1);
+      box-shadow: 0 8px 20px rgba(232, 255, 90, 0.4);
+    }
+
+    .crop-name {
+      font-weight: bold;
+      color: #e8ff5a;
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+    .crop-suitability {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1rem;
+      margin-bottom: 15px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Button Styling in Cards */
+    .crop-card a {
+      display: inline-block;
+      background: rgba(232, 255, 90, 0.2);
+      color: #e8ff5a;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      text-decoration: none;
+      border: 1px solid rgba(232, 255, 90, 0.3);
+      transition: all 0.3s ease;
+      margin: 2px;
+      font-weight: 600;
+    }
+
+    .crop-card a:hover {
+      background: rgba(232, 255, 90, 0.9);
+      color: #1a1a1a;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(232, 255, 90, 0.3);
+    }
+
+    /* Footer */
+    footer {
+      background: rgba(0, 0, 0, 0.7);
+      color: rgba(255, 255, 255, 0.8);
+      text-align: center;
+      font-size: 14px;
+      margin-top: 60px;
+      padding: 25px 20px;
+      border-top: 1px solid rgba(232, 255, 90, 0.3);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 2.2rem;
+      }
+      
+      header p {
+        font-size: 1.1rem;
+      }
+
+      .dropdown-container {
+        padding: 20px;
+        margin: 20px 10px;
+      }
+
+      .crop-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      #cropResults {
+        margin: 20px 10px;
+        padding: 20px;
+      }
+
+      .back-button {
+        position: static;
+        display: inline-block;
+        margin-top: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <video autoplay muted loop playsinline id="bg-video">
+  <source src="{{ url_for('static', filename='videos/background.mp4') }}" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+  <header>
+    <div class="title-container">
+      <h1>Crop Suitability Advisor</h1>
+    </div>
+    <p>Discover which crops grow best in your village, powered by agricultural data.</p>
+    <a href="/" class="back-button">← Back to Home</a>
+  </header>
+
+  {% if not manual %}
+  <div class="dropdown-container">
+    <label>State:</label>
+    <select id="stateDropdown"></select>
+
+    <label>District:</label>
+    <select id="districtDropdown"></select>
+
+    <label>Block:</label>
+    <select id="blockDropdown"></select>
+
+    <label>Village:</label>
+    <select id="villageDropdown"></select>
+
+    <button id="predictBtn">
+       Predict Crops
+    </button>
+  </div>
+  {% endif %}
+
+  <div id="cropResults">
+    <h3>Crop Suitability:</h3>
+    <div id="resultsContainer">
+  {% if manual and crop_data %}
+    {% set groups = {'Highly Suitable': [], 'Moderately Suitable': [], 'Not Suitable': []} %}
+    {% for crop, suitability in crop_data.items() %}
+      {% set _ = groups[suitability].append(crop) %}
+    {% endfor %}
+
+    {% for group, crops in groups.items() %}
+      {% if crops %}
+        <h4>
+          {% if group == 'Highly Suitable' %}🟢 Highly Suitable Crops
+          {% elif group == 'Moderately Suitable' %}🟡 Moderately Suitable Crops
+          {% elif group == 'Not Suitable' %}🔴 Not Suitable Crops
+          {% endif %}
+        </h4>
+        <div class="crop-grid">
+
+{% for crop in crops %}
+  {% set image = crop|lower|replace(' ', '')|replace('(', '')|replace(')', '')|replace('-', '')|replace('/', '')|replace('&', '') + '.jpg' %}
+  {% set suitability = group %}
+  {% set css_class = 'highly-suitable' if suitability == 'Highly Suitable' else 'moderately-suitable' if suitability == 'Moderately Suitable' else 'not-suitable' %}
+
+  <div class="crop-card {{ css_class }}">
+    <img class="crop-icon" src="{{ url_for('static', filename='icons/' ~ image) }}" alt="{{ crop }}">
+    <div class="crop-name">{{ crop }}</div>
+    <div class="crop-suitability">{{ suitability }}</div>
+
+    <!-- 🌱 Added Button Section -->
+    <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 6px;">
+      <a href="{{ url_for('crop_info', crop_name=crop) }}"
+         style="background: #2e7d32; color: white; padding: 6px 10px; border-radius: 6px; font-size: 13px; text-decoration: none;">
+         📄 Crop Information
+      </a>
+      <a href="{{ url_for('water_recommendation', crop_name=crop) }}"
+         style="background: #1976d2; color: white; padding: 6px 10px; border-radius: 6px; font-size: 13px; text-decoration: none;">
+         💧 Water Recommendation
+      </a>
+      <a href="{{ url_for('dynamic_planner') }}?crop={{ crop.lower().replace(' ', '_').replace('(', '').replace(')', '') }}"
+         style="background: #f57c00; color: white; padding: 6px 10px; border-radius: 6px; font-size: 13px; text-decoration: none;">
+         📊 Smart Gantt Chart
+      </a>
+    </div>
+  </div>
+{% endfor %}
+
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+</div>
+
+  </div>
+
+  <footer>
+    © 2025 Crop Intelligence Tool | Built for Agricultural Decision Making
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const cropOrder = [
+        'Sugarcane', 'Cotton', 'Soyabean', 'Rice', 'Jowar',
+        'Tur (Pigeon Pea)', 'Wheat', 'Groundnut', 'Onion', 'Tomato',
+        'Potato', 'Garlic'
+      ];
+
+      const cropImages = {
+        'Sugarcane': 'sugarcane.jpg',
+        'Cotton': 'cotton.jpg',
+        'Soyabean': 'soyabean.jpg',
+        'Rice': 'rice.jpg',
+        'Jowar': 'jowar.jpg',
+        'Tur (Pigeon Pea)': 'turpigeonpea.jpg',
+        'Wheat': 'wheat.jpg',
+        'Groundnut': 'groundnut.jpg',
+        'Onion': 'onion.jpg',
+        'Tomato': 'tomato.jpg',
+        'Potato': 'potato.jpg',
+        'Garlic': 'garlic.jpg'
+      };
+
+      const getColor = (suitability) => {
+        if (!suitability) return '#eee';
+        suitability = suitability.toLowerCase();
+        if (suitability.includes('high')) return '#d0f0d0';
+        if (suitability.includes('moderate')) return '#fef7cc';
+        if (suitability.includes('not')) return '#ffd6d6';
+        return '#eee';
+      };
+
+      {% if manual and crop_data %}
+        // skip manual block, no change
+      {% else %}
+        let data = {};
+
+        async function loadData() {
+          const res = await fetch('/data');
+          data = await res.json();
+          populateStates();
+        }
+
+        function populateStates() {
+          const stateDropdown = document.getElementById('stateDropdown');
+          stateDropdown.innerHTML = '<option value="">Select State</option>';
+          for (let state in data) {
+            stateDropdown.innerHTML += `<option value="${state}">${state}</option>`;
+          }
+        }
+
+        function populateDistricts() {
+          const state = document.getElementById('stateDropdown').value;
+          const districtDropdown = document.getElementById('districtDropdown');
+          districtDropdown.innerHTML = '<option value="">Select District</option>';
+          if (data[state]) {
+            for (let district in data[state]) {
+              districtDropdown.innerHTML += `<option value="${district}">${district}</option>`;
+            }
+          }
+          document.getElementById('blockDropdown').innerHTML = '';
+          document.getElementById('villageDropdown').innerHTML = '';
+          document.getElementById('resultsContainer').innerHTML = '';
+        }
+
+        function populateBlocks() {
+          const state = document.getElementById('stateDropdown').value;
+          const district = document.getElementById('districtDropdown').value;
+          const blockDropdown = document.getElementById('blockDropdown');
+          blockDropdown.innerHTML = '<option value="">Select Block</option>';
+          if (data[state] && data[state][district]) {
+            for (let block in data[state][district]) {
+              blockDropdown.innerHTML += `<option value="${block}">${block}</option>`;
+            }
+          }
+          document.getElementById('villageDropdown').innerHTML = '';
+          document.getElementById('resultsContainer').innerHTML = '';
+        }
+
+        function populateVillages() {
+          const state = document.getElementById('stateDropdown').value;
+          const district = document.getElementById('districtDropdown').value;
+          const block = document.getElementById('blockDropdown').value;
+          const villageDropdown = document.getElementById('villageDropdown');
+          villageDropdown.innerHTML = '<option value="">Select Village</option>';
+          if (data[state] && data[state][district] && data[state][district][block]) {
+            data[state][district][block].forEach(village => {
+              villageDropdown.innerHTML += `<option value="${village}">${village}</option>`;
+            });
+          }
+          document.getElementById('resultsContainer').innerHTML = '';
+        }
+
+        async function fetchCropResults() {
+          const state = document.getElementById('stateDropdown').value;
+          const district = document.getElementById('districtDropdown').value;
+          const block = document.getElementById('blockDropdown').value;
+          const village = document.getElementById('villageDropdown').value;
+          const resultContainer = document.getElementById('resultsContainer');
+
+          if (!state || !district || !block || !village) {
+            resultContainer.innerHTML = "<p style='color:red;'>Please select all fields.</p>";
+            return;
+          }
+
+          const response = await fetch(`/village-data/${encodeURIComponent(state)}/${encodeURIComponent(district)}/${encodeURIComponent(block)}/${encodeURIComponent(village)}`);
+
+          if (response.ok) {
+            const cropData = await response.json();
+
+            const groups = {
+              high: [],
+              moderate: [],
+              not: [],
+              unknown: []
+            };
+
+            cropOrder.forEach(crop => {
+              const value = (cropData[crop] || 'N/A').toLowerCase();
+              const cssClass = value.includes('high') ? 'highly-suitable' : 
+                              value.includes('moderate') ? 'moderately-suitable' : 
+                              value.includes('not') ? 'not-suitable' : '';
+              const imageUrl = `/static/icons/${cropImages[crop] || 'default.jpg'}`;
+
+const encodedCrop = encodeURIComponent(crop);
+const cardHTML = `
+  <div class="crop-card ${cssClass}">
+    <img class="crop-icon" src="${imageUrl}" alt="${crop}">
+    <div class="crop-name">${crop}</div>
+    <div class="crop-suitability">${cropData[crop] || 'N/A'}</div>
+    <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 6px;">
+      <a href="/crops/${encodedCrop}"
+         style="background: #2e7d32; color: white; padding: 6px 10px; border-radius: 6px; font-size: 13px; text-decoration: none;">
+         📄 Crop Information
+      </a>
+      <a href="/water-recommendation/${encodedCrop}"
+         style="background: #1976d2; color: white; padding: 6px 10px; border-radius: 6px; font-size: 13px; text-decoration: none;">
+         💧 Water Recommendation
+      </a>
+      <a href="/dynamic-planner?crop=${crop.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '')}"
+         style="background: #f57c00; color: white; padding: 6px 10px; border-radius: 6px; font-size: 13px; text-decoration: none;">
+         📊 Smart Gantt Chart
+      </a>
+    </div>
+  </div>
+`;
+
+
+
+              if (value.includes('high')) groups.high.push(cardHTML);
+              else if (value.includes('moderate')) groups.moderate.push(cardHTML);
+              else if (value.includes('not')) groups.not.push(cardHTML);
+              else groups.unknown.push(cardHTML);
+            });
+
+            resultContainer.innerHTML = `
+              ${groups.high.length ? `<h4>🟢 Highly Suitable Crops</h4><div class="crop-grid">${groups.high.join('')}</div>` : ''}
+              ${groups.moderate.length ? `<h4>🟡 Moderately Suitable Crops</h4><div class="crop-grid">${groups.moderate.join('')}</div>` : ''}
+              ${groups.not.length ? `<h4>🔴 Not Suitable Crops</h4><div class="crop-grid">${groups.not.join('')}</div>` : ''}
+              ${groups.unknown.length ? `<h4>❓ Unknown Suitability</h4><div class="crop-grid">${groups.unknown.join('')}</div>` : ''}
+            `;
+
+            document.getElementById('cropResults').scrollIntoView({ behavior: 'smooth' });
+          } else {
+            resultContainer.innerHTML = "<p style='color:red;'>No crop data found for this village.</p>";
+          }
+        }
+
+        document.getElementById('stateDropdown').addEventListener('change', populateDistricts);
+        document.getElementById('districtDropdown').addEventListener('change', populateBlocks);
+        document.getElementById('blockDropdown').addEventListener('change', populateVillages);
+        document.getElementById('predictBtn').addEventListener('click', fetchCropResults);
+
+        loadData();
+      {% endif %}
+    });
+  </script>
+  <!-- Chatbot Widget (initially hidden) -->
+  <div class="agri-chatbot-widget" id="chatbot" style="display: none;">
+    <div class="chatbot-header">
+      <div class="bot-icon">
+        <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot Icon">
+      </div>
+      <div class="bot-info">
+        <h3>AgriBot AI</h3>
+        <p>Your farming assistant</p>
+      </div>
+      <div class="status-indicator"></div>
+      <button class="minimize-btn" onclick="toggleChatbot()">−</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="quick-suggestions">
+      <button class="suggestion-btn">Crop rotation</button>
+      <button class="suggestion-btn">Pest control</button>
+      <button class="suggestion-btn">Weather forecast</button>
+    </div>
+    <div class="chat-input-area">
+      <div class="input-container">
+        <input type="text" class="chat-input" placeholder="Ask about farming, crops, weather..." id="messageInput">
+        <button class="send-button" onclick="sendMessage()"></button>
+      </div>
+    </div>
+  </div>
+  <!-- Toggle Button (initially visible) -->
+  <button class="chatbot-toggle" id="chatbotToggle" onclick="toggleChatbot()" style="display: flex;">
+    <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot">
+  </button>
+
+  <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+</body>
+</html>
+

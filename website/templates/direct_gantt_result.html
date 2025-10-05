@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Gantt Chart - {{ crop_name.title() }} | FarmOps</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='agriculture-chatbot-styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            background: url('{{ url_for('static', filename='images/landing-bg.jpg') }}') no-repeat center center fixed;
+            background-size: cover;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: #e8ff5a;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .gantt-container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 30px;
+            border-radius: 24px;
+            background: rgba(255,255,255,0.12);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+            backdrop-filter: blur(16px) saturate(140%);
+            -webkit-backdrop-filter: blur(16px) saturate(140%);
+            border: 1.5px solid rgba(232,255,90,0.18);
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .main-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #e8ff5a;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(232, 255, 90, 0.3);
+        }
+
+        .crop-subtitle {
+            font-size: 1.2rem;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+
+        .data-source-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        .location-badge {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196F3;
+            border: 1px solid rgba(33, 150, 243, 0.3);
+        }
+
+        .manual-badge {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-card h4 {
+            color: #e8ff5a;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .info-card p {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .chart-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 500px;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .timeline-summary {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #e8ff5a;
+        }
+
+        .phase-list {
+            margin-top: 15px;
+        }
+
+        .phase-item {
+            background: rgba(255, 255, 255, 0.05);
+            margin: 8px 0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 3px solid #4CAF50;
+        }
+
+        .phase-name {
+            font-weight: 600;
+            color: #e8ff5a;
+        }
+
+        .phase-duration {
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .advanced-tag {
+            background: rgba(255, 152, 0, 0.2);
+            color: #FF9800;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="gantt-container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <a href="{{ url_for('index') }}" class="back-button">← Back to Crop Predictions</a>
+            
+            <h1 class="main-title">📊 Smart Gantt Chart</h1>
+            <h2 class="crop-subtitle">{{ crop_name.title() }} Cultivation Timeline</h2>
+            
+            {% if data_source == 'location_based' %}
+            <span class="data-source-badge location-badge">
+                📍 Location-Based Analysis: {{ soil_data.location if soil_data.location else 'Regional Data' }}
+            </span>
+            {% else %}
+            <span class="data-source-badge manual-badge">
+                🔬 Manual Soil Analysis: {{ soil_data.timestamp[:10] if soil_data.timestamp else 'Recent' }}
+            </span>
+            {% endif %}
+        </div>
+
+        <!-- Info Grid -->
+        <div class="info-grid">
+            <div class="info-card">
+                <h4>📅 Total Duration</h4>
+                <p>{{ estimated_duration }} days</p>
+            </div>
+            <div class="info-card">
+                <h4>🔧 Total Phases</h4>
+                <p>{{ total_phases }} phases</p>
+            </div>
+            <div class="info-card">
+                <h4>🌱 Crop Type</h4>
+                <p>{{ crop_name.title() }}</p>
+            </div>
+            <div class="info-card">
+                <h4>📊 Analysis Type</h4>
+                <p>{{ 'Location-Based' if data_source == 'location_based' else 'Manual Testing' }}</p>
+            </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="chart-section">
+            <div id="ganttChart" style="width: 100%; height: 500px;"></div>
+        </div>
+
+        <!-- Timeline Summary -->
+        <div class="timeline-summary">
+            <h3 style="color: #e8ff5a; margin-bottom: 15px;">📋 Timeline Overview</h3>
+            <p style="color: #fff; margin-bottom: 15px;">
+                This timeline has been optimized for {{ crop_name.lower() }} cultivation based on 
+                {% if data_source == 'location_based' %}
+                    your location's soil and climate conditions.
+                {% else %}
+                    your detailed soil analysis results.
+                {% endif %}
+            </p>
+            
+            <div class="phase-list">
+                {% for phase in timeline %}
+                <div class="phase-item">
+                    <div class="phase-name">
+                        {{ phase.task_name }}
+                        {% if 'Advanced Treatment' in phase.category or 'Treatment' in phase.category %}
+                        <span class="advanced-tag">SMART ADJUSTMENT</span>
+                        {% endif %}
+                    </div>
+                    <div class="phase-duration">
+                        {{ phase.duration }} days | {{ phase.start_date }} to {{ phase.end_date }} | {{ phase.category }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load Google Charts
+        google.charts.load('current', {'packages':['gantt']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'Task ID');
+            data.addColumn('string', 'Task Name');
+            data.addColumn('string', 'Resource');
+            data.addColumn('date', 'Start Date');
+            data.addColumn('date', 'End Date');
+            data.addColumn('number', 'Duration');
+            data.addColumn('number', 'Percent Complete');
+            data.addColumn('string', 'Dependencies');
+
+            // Add timeline data
+            {% for phase in timeline %}
+            data.addRows([
+                ['{{ phase.id }}', 
+                 '{{ phase.task_name }}', 
+                 '{{ phase.category }}',
+                 new Date('{{ phase.start_date }}'), 
+                 new Date('{{ phase.end_date }}'), 
+                 null, 
+                 0, 
+                 '{{ phase.dependencies }}']
+            ]);
+            {% endfor %}
+
+            var options = {
+                height: 500,
+                backgroundColor: 'transparent',
+                gantt: {
+                    trackHeight: 35,
+                    barHeight: 25,
+                    barCornerRadius: 4,
+                    arrow: {
+                        angle: 100,
+                        length: 8,
+                        spaceAfter: 4
+                    },
+                    palette: [
+                        {
+                            "color": "#4CAF50",
+                            "dark": "#2E7D32",
+                            "light": "#A5D6A7"
+                        },
+                        {
+                            "color": "#2196F3", 
+                            "dark": "#1565C0",
+                            "light": "#90CAF9"
+                        },
+                        {
+                            "color": "#FF9800",
+                            "dark": "#E65100", 
+                            "light": "#FFCC80"
+                        },
+                        {
+                            "color": "#9C27B0",
+                            "dark": "#6A1B9A",
+                            "light": "#CE93D8"
+                        }
+                    ]
+                }
+            };
+
+            var chart = new google.visualization.Gantt(document.getElementById('ganttChart'));
+            chart.draw(data, options);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            drawChart();
+        });
+    </script>
+
+    <!-- Chatbot Widget -->
+    <div class="agri-chatbot-widget" id="chatbot" style="display: none;">
+        <div class="chatbot-header">
+            <div class="bot-icon">
+                <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot Icon">
+            </div>
+            <div class="bot-info">
+                <h3>AgriBot AI</h3>
+                <p>Ask about your timeline</p>
+            </div>
+            <div class="status-indicator"></div>
+            <button class="minimize-btn" onclick="toggleChatbot()">−</button>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="quick-suggestions">
+            <button class="suggestion-btn">Timeline details</button>
+            <button class="suggestion-btn">Soil treatments</button>
+            <button class="suggestion-btn">Best practices</button>
+        </div>
+        <div class="chat-input-area">
+            <div class="input-container">
+                <input type="text" class="chat-input" placeholder="Ask about your farming timeline..." id="messageInput">
+                <button class="send-button" onclick="sendMessage()"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toggle Button -->
+    <button class="chatbot-toggle" id="chatbotToggle" onclick="toggleChatbot()" style="display: flex;">
+        <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot">
+    </button>
+
+    <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+</body>
+</html>

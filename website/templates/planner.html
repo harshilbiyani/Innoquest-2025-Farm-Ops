@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='agriculture-chatbot-styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Crop Growth Planner - FarmOps</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <style>
+      html, body {
+        height: 100%;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        overflow-x: hidden;
+      }
+
+      body {
+        background: url('{{ url_for('static', filename='images/landing-bg.jpg') }}') no-repeat center center fixed;
+        background-size: cover;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: #e8ff5a;
+        min-height: 100vh;
+        width: 100vw;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 20px 0;
+      }
+
+      /* Main container with glassmorphism */
+      .planner-container {
+        max-width: 1400px;
+        width: 95vw;
+        margin: 20px auto;
+        padding: 40px 32px 50px 32px;
+        border-radius: 32px;
+        background: rgba(255,255,255,0.13);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+        backdrop-filter: blur(16px) saturate(140%);
+        -webkit-backdrop-filter: blur(16px) saturate(140%);
+        border: 1.5px solid rgba(232,255,90,0.18);
+        position: relative;
+        z-index: 1;
+        min-height: fit-content;
+        margin-bottom: 80px;
+        overflow: visible;
+      }
+
+      /* Header styling */
+      .planner-header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .planner-title {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        font-size: 2.8rem;
+        font-weight: 900;
+        text-align: center;
+        margin: 1.5rem 0 1.6rem 0;
+        letter-spacing: 2.2px;
+        line-height: 1.18;
+        color: #1c361b;
+        text-shadow: 0 5px 18px #a5ff4e55, 0px 1px 1px #3e892b17;
+        background: linear-gradient(92deg, #e8ff5a 18%, #43a047 48%, #5aedc7 80%);
+        background-size: 400% 100%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: shimmerSmooth 3.2s linear infinite alternate;
+      }
+
+      @keyframes shimmerSmooth {
+        0%   {background-position: 0% 50%;}
+        100% {background-position: 100% 50%;}
+      }
+
+      .planner-subtitle {
+        font-size: 1.2rem;
+        color: rgba(232, 255, 90, 0.9);
+        margin-bottom: 30px;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      }
+
+      /* Crop selector styling */
+      .selector-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+      }
+
+      .crop-selector {
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(232, 255, 90, 0.3);
+        border-radius: 25px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+        color: #e8ff5a;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        min-width: 250px;
+        text-align: center;
+        outline: none;
+      }
+
+      .crop-selector:focus {
+        border-color: #e8ff5a;
+        box-shadow: 0 0 15px rgba(232, 255, 90, 0.3);
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      .crop-selector option {
+        background: rgba(26, 26, 26, 0.95);
+        color: #e8ff5a;
+        padding: 10px;
+        font-weight: 600;
+      }
+
+      /* Chart container styling */
+      .chart-container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 25px;
+        margin-top: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        overflow: hidden;
+      }
+
+      #chart_div {
+        width: 100%;
+        min-height: 500px;
+        margin: 0;
+        overflow-x: auto;
+        overflow-y: visible;
+      }
+
+      /* Ensure chart visibility */
+      .google-visualization-gantt-bar-fill {
+        fill: none !important;
+      }
+
+      /* Home button styling */
+      .nav-link {
+        position: absolute;
+        top: 25px;
+        left: 25px;
+        z-index: 10;
+        background: rgba(247, 251, 246, 0.81);
+        border-radius: 12px;
+        box-shadow: 0 4px 22px rgba(60, 80, 70, 0.16);
+        padding: 12px 20px;
+        color: #388e3c;
+        text-decoration: none;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: 0.5px;
+        border: 1.3px solid rgba(232, 255, 90, 0.11);
+        transition: transform .36s, box-shadow .36s, background .36s, color .36s, border-color .36s;
+        backdrop-filter: blur(11px);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .nav-link:hover {
+        transform: scale(1.04) rotate(-0.5deg);
+        box-shadow: 0 12px 30px rgba(193,255,58,0.12), 0 4px 14px rgba(56,142,60,0.12);
+        background: rgba(238,255,210, 0.9);
+        border-color: #e8ff5a;
+        color: #1c361b;
+        text-shadow: 0 1px 3px rgba(67, 160, 71, 0.3);
+      }
+
+      .nav-link::before {
+        content: '🏠';
+        margin-right: 8px;
+        font-size: 1.1rem;
+        transition: transform .3s;
+      }
+
+      .nav-link:hover::before {
+        transform: scale(1.1);
+      }
+
+      /* Back button styling */
+      .back-button {
+        position: absolute;
+        top: 25px;
+        right: 25px;
+        z-index: 10;
+        background: rgba(247, 251, 246, 0.81);
+        border-radius: 12px;
+        box-shadow: 0 4px 22px rgba(60, 80, 70, 0.16);
+        padding: 12px 20px;
+        color: #388e3c;
+        text-decoration: none;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: 0.5px;
+        border: 1.3px solid rgba(232, 255, 90, 0.11);
+        transition: transform .36s, box-shadow .36s, background .36s, color .36s, border-color .36s;
+        backdrop-filter: blur(11px);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .back-button:hover {
+        transform: scale(1.04) rotate(-0.5deg);
+        box-shadow: 0 12px 30px rgba(193,255,58,0.12), 0 4px 14px rgba(56,142,60,0.12);
+        background: rgba(238,255,210, 0.9);
+        border-color: #e8ff5a;
+        color: #1c361b;
+        text-shadow: 0 1px 3px rgba(67, 160, 71, 0.3);
+      }
+
+      .back-button::before {
+        content: '←';
+        margin-right: 8px;
+        font-size: 1.1rem;
+        transition: transform .3s;
+      }
+
+      .back-button:hover::before {
+        transform: scale(1.1);
+      }
+
+      /* Responsive design */
+      @media (max-width: 1200px) {
+        .planner-container {
+          width: 98vw;
+          padding: 30px 20px 40px 20px;
+        }
+        
+        .planner-title {
+          font-size: 2.4rem;
+        }
+        
+        #chart_div {
+          min-height: 450px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .planner-container {
+          padding: 20px 15px 30px 15px;
+          margin: 10px;
+          width: calc(100vw - 20px);
+        }
+        
+        .planner-title {
+          font-size: 2rem;
+          margin: 1rem 0;
+        }
+        
+        .planner-subtitle {
+          font-size: 1rem;
+        }
+        
+        .crop-selector {
+          min-width: 200px;
+          font-size: 1rem;
+          padding: 10px 16px;
+        }
+        
+        .chart-container {
+          padding: 15px;
+        }
+        
+        #chart_div {
+          min-height: 400px;
+        }
+        
+        .nav-link {
+          padding: 10px 16px;
+          font-size: 0.9rem;
+          top: 15px;
+          left: 15px;
+        }
+        
+        .nav-link::before {
+          font-size: 1rem;
+          margin-right: 6px;
+        }
+        
+        .back-button {
+          padding: 10px 16px;
+          font-size: 0.9rem;
+          top: 15px;
+          right: 15px;
+        }
+        
+        .back-button::before {
+          font-size: 1rem;
+          margin-right: 6px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .planner-title {
+          font-size: 1.6rem;
+        }
+        
+        #chart_div {
+          min-height: 350px;
+        }
+      }
+    </style>
+
+    <script type="text/javascript">
+      google.charts.load("current", { packages: ["gantt"] });
+      
+      // Initialize with auto-crop selection
+      google.charts.setOnLoadCallback(() => {
+        // Check if a specific crop was passed from the route
+        const urlCropName = "{{ crop_name|default('') }}";
+        let initialCrop = "sugarcane"; // default
+        
+        if (urlCropName) {
+          // Map crop names to selector values (handle case differences and special characters)
+          const cropMap = {
+            'sugarcane': 'sugarcane',
+            'cotton': 'cotton', 
+            'soyabean': 'soyabean',
+            'rice': 'rice',
+            'jowar': 'jowar',
+            'tur (pigeon pea)': 'tur',
+            'tur': 'tur',
+            'pigeon pea': 'tur',
+            'wheat': 'wheat',
+            'groundnut': 'groundnut',
+            'onion': 'onion',
+            'tomato': 'tomato',
+            'potato': 'potato',
+            'garlic': 'garlic'
+          };
+          
+          const normalizedCropName = urlCropName.toLowerCase().trim();
+          const cropId = cropMap[normalizedCropName];
+          
+          if (cropId) {
+            initialCrop = cropId;
+            // Set the dropdown to the specific crop
+            setTimeout(() => {
+              const selector = document.querySelector('.crop-selector');
+              if (selector) {
+                selector.value = cropId;
+              }
+            }, 100);
+          }
+        }
+        
+        drawChart(initialCrop);
+      });
+
+      function drawChart(crop) {
+        const data = new google.visualization.DataTable();
+        data.addColumn("string", "Task ID");
+        data.addColumn("string", "Task Name");
+        data.addColumn("string", "Resource");
+        data.addColumn("date", "Start Date");
+        data.addColumn("date", "End Date");
+        data.addColumn("number", "Duration");
+        data.addColumn("number", "Percent Complete");
+        data.addColumn("string", "Dependencies");
+
+        const cropData = {
+          sugarcane: [
+            ["1", "Land prep, sett treatment and planting", "Preparation", new Date(2025, 1, 1), new Date(2025, 1, 15), null, 0, null],
+            ["2", "First irrigation, light hoeing", "Irrigation", new Date(2025, 1, 16), new Date(2025, 1, 28), null, 0, "1"],
+            ["3", "Fertilizer application, weeding", "Fertilization", new Date(2025, 2, 1), new Date(2025, 2, 20), null, 0, "2"],
+            ["4", "Earthing up, pest scouting", "Pest Control", new Date(2025, 2, 20), new Date(2025, 3, 10), null, 0, "3"],
+            ["5", "Ratoon management or trash mulching", "Maintenance", new Date(2025, 3, 25), new Date(2025, 4, 20), null, 0, "4"],
+            ["6", "Top dressing, final irrigation", "Irrigation", new Date(2025, 5, 1), new Date(2025, 5, 25), null, 0, "5"],
+            ["7", "Monitor growth, pest & disease management", "Monitoring", new Date(2025, 5, 20), new Date(2025, 10, 30), null, 0, "6"],
+            ["8", "Harvesting and ratoon cleaning", "Harvest", new Date(2025, 11, 1), new Date(2025, 11, 15), null, 0, "7"]
+          ],
+          cotton: [
+            ["1", "Land preparation and sowing", "Preparation", new Date(2025, 5, 1), new Date(2025, 5, 14), null, 0, null],
+            ["2", "Germination, thinning", "Growth", new Date(2025, 5, 15), new Date(2025, 6, 5), null, 0, "1"],
+            ["3", "First fertilizer dose, weeding", "Maintenance", new Date(2025, 6, 6), new Date(2025, 6, 26), null, 0, "2"],
+            ["4", "Pest control, interculture", "Pest Control", new Date(2025, 6, 27), new Date(2025, 7, 23), null, 0, "3"],
+            ["5", "Flowering stage, top dressing", "Fertilization", new Date(2025, 7, 24), new Date(2025, 8, 20), null, 0, "4"],
+            ["6", "Boll development, irrigation", "Irrigation", new Date(2025, 8, 21), new Date(2025, 10, 1), null, 0, "5"],
+            ["7", "Pest scouting, defoliation", "Pest Control", new Date(2025, 10, 2), new Date(2025, 10, 29), null, 0, "6"],
+            ["8", "Harvesting and field cleaning", "Harvest", new Date(2025, 10, 30), new Date(2025, 11, 27), null, 0, "7"]
+          ],
+          soyabean: [
+            ["1", "Field prep, seed treatment, sowing", "Preparation", new Date(2025, 5, 15), new Date(2025, 5, 28), null, 0, null],
+            ["2", "Germination, initial weeding", "Weeding", new Date(2025, 5, 29), new Date(2025, 6, 12), null, 0, "1"],
+            ["3", "NPK application, pest monitoring", "Fertilization", new Date(2025, 6, 13), new Date(2025, 6, 26), null, 0, "2"],
+            ["4", "Intercultivation, second weeding", "Maintenance", new Date(2025, 6, 27), new Date(2025, 7, 16), null, 0, "3"],
+            ["5", "Flowering and pod formation", "Growth", new Date(2025, 7, 17), new Date(2025, 8, 13), null, 0, "4"],
+            ["6", "Maturity, pest control", "Monitoring", new Date(2025, 8, 14), new Date(2025, 9, 11), null, 0, "5"],
+            ["7", "Harvesting and drying", "Harvest", new Date(2025, 9, 12), new Date(2025, 9, 25), null, 0, "6"]
+          ],
+          rice: [
+            ["1", "Nursery preparation, land puddling", "Preparation", new Date(2025, 5, 10), new Date(2025, 5, 23), null, 0, null],
+            ["2", "Transplanting", "Planting", new Date(2025, 5, 24), new Date(2025, 6, 7), null, 0, "1"],
+            ["3", "Early growth, fertilizer application", "Fertilization", new Date(2025, 6, 8), new Date(2025, 6, 28), null, 0, "2"],
+            ["4", "Tillering, weeding", "Weeding", new Date(2025, 6, 29), new Date(2025, 7, 25), null, 0, "3"],
+            ["5", "Panicle initiation, pest control", "Pest Control", new Date(2025, 7, 26), new Date(2025, 8, 15), null, 0, "4"],
+            ["6", "Grain filling stage", "Growth", new Date(2025, 8, 16), new Date(2025, 9, 13), null, 0, "5"],
+            ["7", "Ripening and drying", "Drying", new Date(2025, 9, 14), new Date(2025, 10, 3), null, 0, "6"],
+            ["8", "Harvesting and post-harvest drying", "Harvest", new Date(2025, 10, 4), new Date(2025, 10, 17), null, 0, "7"]
+          ],
+          jowar: [
+            ["1", "Land preparation and sowing", "Preparation", new Date(2025, 5, 1), new Date(2025, 5, 10), null, 0, null],
+            ["2", "Seedling emergence, initial weeding", "Weeding", new Date(2025, 5, 11), new Date(2025, 5, 24), null, 0, "1"],
+            ["3", "First fertilizer application", "Fertilization", new Date(2025, 5, 25), new Date(2025, 6, 5), null, 0, "2"],
+            ["4", "Vegetative growth, irrigation", "Growth", new Date(2025, 6, 6), new Date(2025, 6, 26), null, 0, "3"],
+            ["5", "Flowering stage, pest management", "Pest Control", new Date(2025, 6, 27), new Date(2025, 7, 15), null, 0, "4"],
+            ["6", "Grain filling, irrigation", "Irrigation", new Date(2025, 7, 16), new Date(2025, 8, 5), null, 0, "5"],
+            ["7", "Maturity and drying", "Drying", new Date(2025, 8, 6), new Date(2025, 8, 25), null, 0, "6"],
+            ["8", "Harvesting and post-harvest processing", "Harvest", new Date(2025, 8, 26), new Date(2025, 9, 10), null, 0, "7"]
+          ],
+          tur: [
+            ["1", "Land preparation, seed treatment, sowing", "Preparation", new Date(2025, 5, 25), new Date(2025, 6, 8), null, 0, null],
+            ["2", "Germination and weeding", "Weeding", new Date(2025, 6, 9), new Date(2025, 6, 29), null, 0, "1"],
+            ["3", "Fertilizer application and pest monitoring", "Fertilization", new Date(2025, 6, 30), new Date(2025, 7, 19), null, 0, "2"],
+            ["4", "Flowering, nipping and disease control", "Growth", new Date(2025, 7, 20), new Date(2025, 8, 23), null, 0, "3"],
+            ["5", "Pod development and maturation", "Development", new Date(2025, 8, 24), new Date(2025, 9, 28), null, 0, "4"],
+            ["6", "Drying and harvesting", "Harvest", new Date(2025, 9, 29), new Date(2025, 10, 25), null, 0, "5"]
+          ],
+          wheat: [
+            ["1", "Field prep, seed treatment, sowing", "Preparation", new Date(2025, 10, 15), new Date(2025, 10, 28), null, 0, null],
+            ["2", "Germination, first irrigation", "Irrigation", new Date(2025, 10, 29), new Date(2025, 11, 12), null, 0, "1"],
+            ["3", "Tillering, second irrigation", "Growth", new Date(2025, 11, 13), new Date(2026, 0, 2), null, 0, "2"],
+            ["4", "Crown root initiation, fertilizer", "Fertilization", new Date(2026, 0, 3), new Date(2026, 0, 23), null, 0, "3"],
+            ["5", "Jointing and pest monitoring", "Monitoring", new Date(2026, 0, 24), new Date(2026, 1, 13), null, 0, "4"],
+            ["6", "Ear emergence, irrigation", "Irrigation", new Date(2026, 1, 14), new Date(2026, 2, 6), null, 0, "5"],
+            ["7", "Grain filling, final irrigation", "Growth", new Date(2026, 2, 7), new Date(2026, 2, 27), null, 0, "6"],
+            ["8", "Ripening and harvesting", "Harvest", new Date(2026, 2, 28), new Date(2026, 3, 17), null, 0, "7"]
+          ],
+          groundnut: [
+            ["1", "Land prep, seed treatment, sowing", "Preparation", new Date(2025, 5, 15), new Date(2025, 5, 28), null, 0, null],
+            ["2", "Germination, gap filling, irrigation", "Irrigation", new Date(2025, 5, 29), new Date(2025, 6, 12), null, 0, "1"],
+            ["3", "Weeding, fertilizer application", "Fertilization", new Date(2025, 6, 13), new Date(2025, 7, 2), null, 0, "2"],
+            ["4", "Peg formation, gypsum application", "Growth", new Date(2025, 7, 3), new Date(2025, 7, 23), null, 0, "3"],
+            ["5", "Pod development, disease monitoring", "Monitoring", new Date(2025, 7, 24), new Date(2025, 8, 13), null, 0, "4"],
+            ["6", "Maturation and drying", "Drying", new Date(2025, 8, 14), new Date(2025, 8, 27), null, 0, "5"],
+            ["7", "Harvesting and storage", "Harvest", new Date(2025, 8, 28), new Date(2025, 9, 11), null, 0, "6"]
+            ],
+        onion: [
+            ["1", "Nursery preparation and seed sowing", "Preparation", new Date(2025, 9, 20), new Date(2025, 10, 2), null, 0, null],
+            ["2", "Nursery maintenance, irrigation", "Irrigation", new Date(2025, 10, 3), new Date(2025, 11, 1), null, 0, "1"],
+            ["3", "Transplanting to main field", "Transplanting", new Date(2025, 11, 2), new Date(2025, 11, 15), null, 0, "2"],
+            ["4", "Establishment, light irrigation", "Growth", new Date(2025, 11, 16), new Date(2026, 0, 5), null, 0, "3"],
+            ["5", "Bulb initiation, fertilizer application", "Fertilization", new Date(2026, 0, 6), new Date(2026, 1, 9), null, 0, "4"],
+            ["6", "Bulb development, disease control", "Monitoring", new Date(2026, 1, 10), new Date(2026, 2, 9), null, 0, "5"],
+            ["7", "Maturation, neck fall stage", "Maturation", new Date(2026, 2, 10), new Date(2026, 2, 30), null, 0, "6"],
+            ["8", "Harvesting and curing", "Harvest", new Date(2026, 2, 31), new Date(2026, 3, 13), null, 0, "7"]
+            ],
+        tomato: [
+            ["1", "Nursery bed preparation and seed sowing", "Preparation", new Date(2025, 9, 1), new Date(2025, 9, 14), null, 0, null],
+            ["2", "Nursery care and watering", "Irrigation", new Date(2025, 9, 15), new Date(2025, 10, 4), null, 0, "1"],
+            ["3", "Transplanting to main field", "Transplanting", new Date(2025, 10, 5), new Date(2025, 10, 18), null, 0, "2"],
+            ["4", "Establishment, weeding, irrigation", "Growth", new Date(2025, 10, 19), new Date(2025, 11, 9), null, 0, "3"],
+            ["5", "Flowering and pest monitoring", "Monitoring", new Date(2025, 11, 10), new Date(2026, 0, 6), null, 0, "4"],
+            ["6", "Fruit setting and irrigation", "Fruiting", new Date(2026, 0, 7), new Date(2026, 1, 3), null, 0, "5"],
+            ["7", "Fruit development, fertilizer spray", "Fertilization", new Date(2026, 1, 4), new Date(2026, 1, 24), null, 0, "6"],
+            ["8", "Harvesting in batches", "Harvest", new Date(2026, 1, 25), new Date(2026, 2, 16), null, 0, "7"]
+            ],
+        potato: [
+            ["1", "Land prep, seed cutting, seed treatment", "Preparation", new Date(2025, 9, 25), new Date(2025, 10, 7), null, 0, null],
+            ["2", "Planting and first irrigation", "Irrigation", new Date(2025, 10, 8), new Date(2025, 10, 21), null, 0, "1"],
+            ["3", "Germination and gap filling", "Growth", new Date(2025, 10, 22), new Date(2025, 11, 5), null, 0, "2"],
+            ["4", "Earthing up, fertilizer application", "Fertilization", new Date(2025, 11, 6), new Date(2025, 11, 26), null, 0, "3"],
+            ["5", "Tuber bulking and pest control", "Monitoring", new Date(2025, 11, 27), new Date(2026, 0, 16), null, 0, "4"],
+            ["6", "Crop maturity, irrigation stops", "Drying", new Date(2026, 0, 17), new Date(2026, 1, 6), null, 0, "5"],
+            ["7", "Harvesting and grading", "Harvest", new Date(2026, 1, 7), new Date(2026, 1, 20), null, 0, "6"]
+            ],
+        garlic: [
+            ["1", "Land preparation and clove sowing", "Preparation", new Date(2025, 9, 20), new Date(2025, 10, 2), null, 0, null],
+            ["2", "Germination and initial irrigation", "Irrigation", new Date(2025, 10, 3), new Date(2025, 10, 23), null, 0, "1"],
+            ["3", "Foliar growth and weeding", "Growth", new Date(2025, 10, 24), new Date(2025, 11, 14), null, 0, "2"],
+            ["4", "Nutrient application and irrigation", "Fertilization", new Date(2025, 11, 15), new Date(2026, 0, 11), null, 0, "3"],
+            ["5", "Bulb formation and pest management", "Monitoring", new Date(2026, 0, 12), new Date(2026, 1, 8), null, 0, "4"],
+            ["6", "Bulb maturation and irrigation reduction", "Drying", new Date(2026, 1, 9), new Date(2026, 2, 1), null, 0, "5"],
+            ["7", "Harvesting and curing", "Harvest", new Date(2026, 2, 2), new Date(2026, 2, 22), null, 0, "6"]
+            ]
+        };
+
+        data.addRows(cropData[crop]);
+
+        const options = {
+          height: 500,
+          gantt: {
+            trackHeight: 30,
+            labelStyle: {
+              fontName: "Arial",
+              fontSize: 13,
+              color: "#333"
+            }
+          }
+        };
+
+        const chart = new google.visualization.Gantt(document.getElementById("chart_div"));
+        chart.draw(data, options);
+      }
+    </script>
+  </head>
+  <body>
+    <div class="planner-container">
+      <a href="{{ url_for('main_dashboard') }}" class="nav-link">
+        Home
+      </a>
+      
+      <a href="{{ url_for('index') }}" class="back-button">
+        Back to Crop Suggestions
+      </a>
+      
+      <div class="planner-header">
+        <h1 class="planner-title">Crop Growth Planner</h1>
+        <p class="planner-subtitle">Plan your crop cultivation schedule with interactive timeline charts</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <a href="{{ url_for('dynamic_planner') }}" style="
+            background: linear-gradient(135deg, #43a047, #66bb6a);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(67, 160, 71, 0.3);
+          " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(67, 160, 71, 0.4)'" 
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(67, 160, 71, 0.3)'">
+            🌱 Try Smart Dynamic Planner
+          </a>
+        </div>
+      </div>
+
+      <div class="selector-container">
+        <select class="crop-selector" onchange="drawChart(this.value)">
+          <option value="sugarcane">🌾 Sugarcane</option>
+          <option value="cotton">🌸 Cotton</option>
+          <option value="soyabean">🌱 Soyabean</option>
+          <option value="rice">🌾 Rice</option>
+          <option value="jowar">🌾 Jowar</option>
+          <option value="tur">🫘 Tur (Pigeon Pea)</option>
+          <option value="wheat">🌾 Wheat</option>
+          <option value="groundnut">🥜 Groundnut</option>
+          <option value="onion">🧅 Onion</option>
+          <option value="tomato">🍅 Tomato</option>
+          <option value="potato">🥔 Potato</option>
+          <option value="garlic">🧄 Garlic</option>
+        </select>
+      </div>
+
+      <div class="chart-container">
+        <div id="chart_div"></div>
+      </div>
+    </div>
+    <!-- Chatbot Widget (initially hidden) -->
+<div class="agri-chatbot-widget" id="chatbot" style="display: none;">
+    <div class="chatbot-header">
+        <div class="bot-icon">
+          <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot Icon">
+        </div>
+        <div class="bot-info">
+            <h3>AgriBot AI</h3>
+            <p>Your farming assistant</p>
+        </div>
+        <div class="status-indicator"></div>
+        <button class="minimize-btn" onclick="toggleChatbot()">−</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="quick-suggestions">
+        <button class="suggestion-btn">Crop rotation</button>
+        <button class="suggestion-btn">Pest control</button>
+        <button class="suggestion-btn">Weather forecast</button>
+    </div>
+    <div class="chat-input-area">
+        <div class="input-container">
+            <input type="text" class="chat-input" placeholder="Ask about farming, crops, weather..." id="messageInput">
+            <button class="send-button" onclick="sendMessage()"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Toggle Button (initially visible) -->
+<button class="chatbot-toggle" id="chatbotToggle" onclick="toggleChatbot()" style="display: flex;">
+  <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot">
+</button>
+
+<script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+  </body>
+</html>

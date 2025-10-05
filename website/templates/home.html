@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farm Ops - Smart Crop Advisory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            overflow-x: hidden;
+            background: url('/static/images/landing-bg.jpg') center/cover no-repeat;
+            background-attachment: fixed;
+            position: relative;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(46, 139, 87, 0.3);
+            z-index: -1;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            right: 0;
+            padding: 20px 30px;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border-radius: 25px;
+            z-index: -1;
+        }
+
+        .nav-btn:hover {
+            background: rgba(50, 205, 50, 0.25);
+            border-color: rgba(50, 205, 50, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(50, 205, 50, 0.3);
+        }
+
+        .nav-btn.active {
+            background: rgba(50, 205, 50, 0.3);
+            border-color: rgba(50, 205, 50, 0.5);
+        }
+
+        /* Main Content */
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .main-heading {
+            color: #FFFFFF;
+            font-size: 4rem;
+            font-weight: 700;
+            text-shadow: 0 0 20px rgba(50, 205, 50, 0.6), 0 0 40px rgba(50, 205, 50, 0.4);
+            margin-bottom: 50px;
+            background: linear-gradient(45deg, #32CD32, #90EE90, #32CD32);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .main-buttons {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .main-btn {
+            padding: 18px 40px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+            min-width: 200px;
+        }
+
+        .btn-explore {
+            background: linear-gradient(45deg, #32CD32, #90EE90);
+            color: white;
+            box-shadow: 0 15px 30px rgba(50, 205, 50, 0.4);
+        }
+
+        .btn-explore:hover {
+            background: linear-gradient(45deg, #90EE90, #32CD32);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(50, 205, 50, 0.5);
+        }
+
+        .btn-about {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-about::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border-radius: 15px;
+            z-index: -1;
+        }
+
+        .btn-about:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(50, 205, 50, 0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(50, 205, 50, 0.3);
+        }
+
+        .main-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .main-btn:hover::after {
+            left: 100%;
+        }
+
+        /* Assistant Icons */
+        .assistant-icons {
+            z-index: 1000;
+        }
+
+        .assistant-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .assistant-icon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .assistant-icon:hover {
+            background: rgba(50, 205, 50, 0.25);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-color: rgba(50, 205, 50, 0.4);
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(50, 205, 50, 0.4);
+        }
+
+        .assistant-icon img {
+            width: 35px;
+            height: 35px;
+            filter: brightness(0) invert(1);
+        }
+
+        .chatbot-icon {
+            position: fixed;
+            right: 30px;
+            bottom: 30px;
+            z-index: 1000;
+        }
+
+        .voice-icon {
+            position: fixed;
+            left: 30px;
+            bottom: 30px;
+            z-index: 1000;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            }
+            50% {
+                box-shadow: 0 20px 40px rgba(50, 205, 50, 0.4), 0 0 30px rgba(50, 205, 50, 0.2);
+            }
+        }
+
+        .assistant-icon.active {
+            animation: pulse 2s infinite;
+        }
+
+        /* Floating Elements */
+        .floating-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .floating-element {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-element:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-element:nth-child(2) {
+            width: 60px;
+            height: 60px;
+            top: 60%;
+            right: 15%;
+            animation-delay: 2s;
+        }
+
+        .floating-element:nth-child(3) {
+            width: 40px;
+            height: 40px;
+            bottom: 30%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.7;
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .top-nav {
+                padding: 15px 20px;
+            }
+
+            .nav-container {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .nav-btn {
+                padding: 10px 15px;
+                font-size: 0.8rem;
+            }
+
+            .main-heading {
+                font-size: 2.5rem;
+                margin-bottom: 40px;
+            }
+
+            .main-buttons {
+                flex-direction: column;
+                gap: 20px;
+                align-items: center;
+            }
+
+            .main-btn {
+                padding: 15px 35px;
+                font-size: 1.1rem;
+                min-width: 180px;
+            }
+
+            .assistant-icon {
+                width: 60px;
+                height: 60px;
+                backdrop-filter: blur(15px);
+                -webkit-backdrop-filter: blur(15px);
+            }
+
+            .assistant-icon img {
+                width: 30px;
+                height: 30px;
+            }
+
+            .chatbot-icon {
+                position: fixed;
+                right: 20px;
+                bottom: 20px;
+            }
+
+            .voice-icon {
+                position: fixed;
+                left: 20px;
+                bottom: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-heading {
+                font-size: 2rem;
+            }
+
+            .nav-container {
+                justify-content: center;
+            }
+
+            .main-btn {
+                min-width: 160px;
+                padding: 12px 30px;
+            }
+        }
+
+        /* Voice Navigation Modal Styles */
+        .voice-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .voice-modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .voice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(50, 205, 50, 0.3);
+        }
+
+        .voice-header h3 {
+            margin: 0;
+            color: #2e8b57;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .close-voice {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-voice:hover,
+        .close-voice:focus {
+            color: #ff4444;
+        }
+
+        .language-selector {
+            margin-bottom: 20px;
+        }
+
+        .language-selector label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2e8b57;
+            font-weight: 600;
+        }
+
+        .language-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(50, 205, 50, 0.3);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            color: #2e8b57;
+            cursor: pointer;
+        }
+
+        .language-selector select:focus {
+            outline: none;
+            border-color: #32cd32;
+            box-shadow: 0 0 10px rgba(50, 205, 50, 0.3);
+        }
+
+        .voice-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .voice-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .voice-btn:first-child {
+            background: linear-gradient(45deg, #32CD32, #90EE90);
+            color: white;
+            box-shadow: 0 10px 20px rgba(50, 205, 50, 0.3);
+        }
+
+        .voice-btn:first-child:hover:not(:disabled) {
+            background: linear-gradient(45deg, #90EE90, #32CD32);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(50, 205, 50, 0.4);
+        }
+
+        .voice-btn:last-child {
+            background: rgba(255, 77, 77, 0.9);
+            color: white;
+            box-shadow: 0 10px 20px rgba(255, 77, 77, 0.3);
+        }
+
+        .voice-btn:last-child:hover:not(:disabled) {
+            background: rgba(255, 77, 77, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(255, 77, 77, 0.4);
+        }
+
+        .voice-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .mic-icon {
+            width: 20px;
+            height: 20px;
+            filter: brightness(0) invert(1);
+        }
+
+        .voice-status {
+            background: rgba(50, 205, 50, 0.1);
+            border: 1px solid rgba(50, 205, 50, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .voice-status p {
+            margin: 0;
+            color: #2e8b57;
+            font-weight: 500;
+        }
+
+        .voice-transcript,
+        .voice-response {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(50, 205, 50, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .voice-transcript h4,
+        .voice-response h4 {
+            margin: 0 0 10px 0;
+            color: #2e8b57;
+            font-size: 1.1rem;
+        }
+
+        .voice-transcript p,
+        .voice-response p {
+            margin: 0;
+            color: #333;
+            line-height: 1.5;
+            font-style: italic;
+        }
+
+        /* Responsive modal */
+        @media (max-width: 768px) {
+            .voice-modal-content {
+                width: 95%;
+                padding: 20px;
+                margin: 10% auto;
+            }
+
+            .voice-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .voice-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Active voice icon animation */
+        .voice-icon.active {
+            background: rgba(50, 205, 50, 0.3);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 20px 40px rgba(50, 205, 50, 0.4);
+            }
+            50% {
+                box-shadow: 0 20px 40px rgba(50, 205, 50, 0.8), 0 0 30px rgba(50, 205, 50, 0.6);
+            }
+            100% {
+                box-shadow: 0 20px 40px rgba(50, 205, 50, 0.4);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-elements">
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+    </div>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <a href="#" class="nav-btn active">Home</a>
+            <a href="#" class="nav-btn">Select Language</a>
+            <a href="#" class="nav-btn">Solutions</a>
+            <a href="#" class="nav-btn">Feedback</a>
+        </div>
+    </nav>
+
+    <!-- Assistant Icons -->
+    <div class="assistant-icons">
+        <div class="assistant-icon voice-icon" onclick="toggleVoiceAssistant()" title="Voice Assistant">
+            <img src="/static/images/mic.png" alt="Voice Assistant" id="voiceIcon">
+        </div>
+        <div class="assistant-icon chatbot-icon" onclick="toggleChatbot()" title="Chatbot">
+            <img src="/static/images/icon.png" alt="Chatbot" id="chatbotIcon">
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <h1 class="main-heading">Smart Crop Advisory</h1>
+        <div class="main-buttons">
+            <a href="#" class="main-btn btn-explore">Explore Solutions</a>
+            <a href="#" class="main-btn btn-about">About Us</a>
+        </div>
+    </div>
+
+    <!-- Voice Navigation Modal -->
+    <div id="voiceModal" class="voice-modal">
+        <div class="voice-modal-content">
+            <div class="voice-header">
+                <h3>Voice Navigation</h3>
+                <span class="close-voice" onclick="closeVoiceModal()">&times;</span>
+            </div>
+            <div class="language-selector">
+                <label>Select Language:</label>
+                <select id="languageSelect">
+                    <option value="en-US">English</option>
+                    <option value="hi-IN">हिंदी (Hindi)</option>
+                    <option value="mr-IN">मराठी (Marathi)</option>
+                </select>
+            </div>
+            <div class="voice-controls">
+                <button id="startListening" class="voice-btn">
+                    <img src="/static/images/mic.png" alt="Mic" class="mic-icon">
+                    Start Listening
+                </button>
+                <button id="stopListening" class="voice-btn" disabled>
+                    Stop Listening
+                </button>
+            </div>
+            <div class="voice-status">
+                <p id="statusText">Click "Start Listening" to begin voice navigation</p>
+            </div>
+            <div class="voice-transcript">
+                <h4>You said:</h4>
+                <p id="transcriptText">...</p>
+            </div>
+            <div class="voice-response">
+                <h4>AI Response:</h4>
+                <p id="responseText">...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Voice Navigation System
+        class VoiceNavigationSystem {
+            constructor() {
+                this.recognition = null;
+                this.isListening = false;
+                this.currentLanguage = 'en-US';
+                this.init();
+            }
+
+            init() {
+                // Check if browser supports speech recognition
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    this.recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                    this.setupRecognition();
+                } else {
+                    console.error('Speech recognition not supported');
+                    alert('Voice recognition not supported in this browser. Please use Chrome, Edge, or Safari.');
+                    return;
+                }
+            }
+
+            setupRecognition() {
+                this.recognition.continuous = false;
+                this.recognition.interimResults = false;
+                this.recognition.lang = this.currentLanguage;
+
+                this.recognition.onstart = () => {
+                    this.isListening = true;
+                    console.log('Voice recognition started...');
+                    document.querySelector('.voice-icon').classList.add('active');
+                    this.showStatus('🎤 Listening... Speak now');
+                };
+
+                this.recognition.onresult = (event) => {
+                    let finalTranscript = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        }
+                    }
+                    
+                    if (finalTranscript) {
+                        console.log('Voice command received:', finalTranscript);
+                        this.showStatus(`You said: "${finalTranscript}"`);
+                        this.processVoiceCommand(finalTranscript.toLowerCase().trim());
+                    }
+                };
+
+                this.recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    this.showStatus(`❌ Error: ${event.error}`);
+                    this.stopListening();
+                };
+
+                this.recognition.onend = () => {
+                    this.stopListening();
+                };
+            }
+
+            setupEventListeners() {
+                // Event listeners are no longer needed as voice is activated directly through the icon
+                // Language switching can be added later if needed
+            }
+
+            startListening() {
+                if (this.recognition && !this.isListening) {
+                    try {
+                        this.recognition.start();
+                        console.log('Starting voice recognition...');
+                    } catch (error) {
+                        console.error('Error starting recognition:', error);
+                        this.showStatus('❌ Could not start voice recognition');
+                    }
+                }
+            }
+
+            stopListening() {
+                if (this.recognition && this.isListening) {
+                    this.recognition.stop();
+                    this.isListening = false;
+                    document.querySelector('.voice-icon').classList.remove('active');
+                    this.hideStatus();
+                    console.log('Voice recognition stopped');
+                }
+            }
+
+            showStatus(message) {
+                let statusDiv = document.getElementById('voiceStatus');
+                if (!statusDiv) {
+                    statusDiv = document.createElement('div');
+                    statusDiv.id = 'voiceStatus';
+                    statusDiv.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: rgba(0, 0, 0, 0.8);
+                        color: white;
+                        padding: 10px 20px;
+                        border-radius: 20px;
+                        z-index: 1000;
+                        font-size: 14px;
+                        backdrop-filter: blur(10px);
+                    `;
+                    document.body.appendChild(statusDiv);
+                }
+                statusDiv.textContent = message;
+                statusDiv.style.display = 'block';
+            }
+
+            hideStatus() {
+                const statusDiv = document.getElementById('voiceStatus');
+                if (statusDiv) {
+                    statusDiv.style.display = 'none';
+                }
+            }
+
+            async processVoiceCommand(command) {
+                this.showStatus('🔄 Processing your command...');
+                
+                // Navigation commands in multiple languages
+                const navigationCommands = {
+                    // English
+                    'home': () => window.location.href = '/',
+                    'features': () => window.location.href = '/features',
+                    'crops': () => window.location.href = '/crops',
+                    'weather': () => window.location.href = '/weather',
+                    'market': () => window.location.href = '/market-dashboard',
+                    'disease': () => window.location.href = '/disease-detection',
+                    'expert': () => window.location.href = '/guidance',
+                    'yieldwise': () => window.location.href = '/yieldwise',
+                    'government schemes': () => window.location.href = '/government-schemes',
+                    
+                    // Hindi
+                    'होम': () => window.location.href = '/',
+                    'घर': () => window.location.href = '/',
+                    'फीचर्स': () => window.location.href = '/features',
+                    'सुविधाएं': () => window.location.href = '/features',
+                    'फसल': () => window.location.href = '/crops',
+                    'मौसम': () => window.location.href = '/weather',
+                    'बाजार': () => window.location.href = '/market-dashboard',
+                    'रोग': () => window.location.href = '/disease-detection',
+                    'विशेषज्ञ': () => window.location.href = '/guidance',
+                    'उत्पादन': () => window.location.href = '/yieldwise',
+                    'सरकारी योजना': () => window.location.href = '/government-schemes',
+                    
+                    // Marathi
+                    'घर जा': () => window.location.href = '/',
+                    'मुख्यपृष्ठ': () => window.location.href = '/',
+                    'वैशिष्ट्ये': () => window.location.href = '/features',
+                    'पीक': () => window.location.href = '/crops',
+                    'हवामान': () => window.location.href = '/weather',
+                    'बाजारपेठ': () => window.location.href = '/market-dashboard',
+                    'आजार': () => window.location.href = '/disease-detection',
+                    'तज्ञ': () => window.location.href = '/guidance',
+                    'उत्पन्न': () => window.location.href = '/yieldwise',
+                    'सरकारी योजना': () => window.location.href = '/government-schemes'
+                };
+
+                // Check for direct navigation commands
+                let commandExecuted = false;
+                for (const [key, action] of Object.entries(navigationCommands)) {
+                    if (command.includes(key.toLowerCase())) {
+                        action();
+                        this.showStatus(`✅ Navigating to ${key}...`);
+                        commandExecuted = true;
+                        break;
+                    }
+                }
+
+                // If no direct command found, use Gemini AI for more complex queries
+                if (!commandExecuted) {
+                    await this.queryGeminiAI(command);
+                }
+            }
+
+            async queryGeminiAI(query) {
+                try {
+                    if (!this.apiKey || this.apiKey === 'YOUR_FREE_GEMINI_API_KEY_HERE') {
+                        throw new Error('Gemini API key not configured');
+                    }
+
+                    // Using Google Gemini free tier API
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${this.apiKey}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{
+                                    text: `You are a farming assistant. The user said: "${query}". 
+                                           Provide a helpful response about farming, crops, weather, or agriculture. 
+                                           If they're asking for navigation, suggest the appropriate page from: 
+                                           home, features, crops, weather, market, disease detection, expert guidance, yieldwise, government schemes.
+                                           Keep the response concise and helpful.`
+                                }]
+                            }]
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const aiResponse = data.candidates[0].content.parts[0].text;
+                        this.showStatus(`🤖 AI: ${aiResponse}`);
+                        this.speakResponse(aiResponse);
+                        this.updateStatus('AI response generated');
+                    } else {
+                        throw new Error('API request failed');
+                    }
+                } catch (error) {
+                    console.error('Gemini AI Error:', error);
+                    const fallbackResponse = this.getFallbackResponse(query);
+                    this.showStatus(`💡 ${fallbackResponse}`);
+                    this.speakResponse(fallbackResponse);
+                    // Status already shown above
+                }
+            }
+
+            getFallbackResponse(query) {
+                const fallbackResponses = {
+                    'en-US': {
+                        default: "I can help you navigate to different sections. Try saying 'features', 'crops', 'weather', 'market', or 'expert guidance'.",
+                        help: "Available commands: Home, Features, Crops, Weather, Market, Disease Detection, Expert Guidance, YieldWise, Government Schemes"
+                    },
+                    'hi-IN': {
+                        default: "मैं आपको विभिन्न अनुभागों में नेविगेट करने में मदद कर सकता हूं। 'फीचर्स', 'फसल', 'मौसम', 'बाजार', या 'विशेषज्ञ' कहने का प्रयास करें।",
+                        help: "उपलब्ध कमांड: होम, फीचर्स, फसल, मौसम, बाजार, रोग पहचान, विशेषज्ञ मार्गदर्शन"
+                    },
+                    'mr-IN': {
+                        default: "मी तुम्हाला वेगवेगळ्या विभागांमध्ये नेव्हिगेट करण्यात मदत करू शकतो. 'वैशिष्ट्ये', 'पीक', 'हवामान', 'बाजार' किंवा 'तज्ञ' म्हणून पहा.",
+                        help: "उपलब्ध कमांड: घर, वैशिष्ट्ये, पीक, हवामान, बाजार, रोग ओळख, तज्ञ मार्गदर्शन"
+                    }
+                };
+
+                const langResponses = fallbackResponses[this.currentLanguage] || fallbackResponses['en-US'];
+                return query.includes('help') || query.includes('मदद') || query.includes('मदत') 
+                    ? langResponses.help 
+                    : langResponses.default;
+            }
+
+            speakResponse(text) {
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = this.currentLanguage;
+                    utterance.rate = 0.8;
+                    utterance.pitch = 1;
+                    speechSynthesis.speak(utterance);
+                }
+            }
+        }
+
+        // Initialize voice navigation system
+        let voiceNav = null;
+
+        function toggleVoiceAssistant() {
+            if (!voiceNav) {
+                voiceNav = new VoiceNavigationSystem();
+            }
+            
+            if (voiceNav.isListening) {
+                voiceNav.stopListening();
+            } else {
+                voiceNav.startListening();
+            }
+        }
+
+        function closeVoiceModal() {
+            // Legacy function - no longer needed as we use direct voice activation
+            if (voiceNav && voiceNav.isListening) {
+                voiceNav.stopListening();
+            }
+        }
+
+        function toggleChatbot() {
+            const chatbotIcon = document.querySelector('.chatbot-icon');
+            chatbotIcon.classList.toggle('active');
+            
+            if (chatbotIcon.classList.contains('active')) {
+                console.log('Chatbot Activated');
+                setTimeout(() => {
+                    chatbotIcon.classList.remove('active');
+                }, 3000);
+            }
+        }
+
+        // Add smooth scrolling and interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            const navBtns = document.querySelectorAll('.nav-btn');
+            const mainBtns = document.querySelectorAll('.main-btn');
+
+            // Navigation button interactions
+            navBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    navBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // Voice navigation is now handled directly through the voice icon
+        });
+    </script>
+</body>
+</html>

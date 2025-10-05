@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-translate="yieldwise.title">YieldWise - Profit Loss Calculator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='agriculture-chatbot-styles.css') }}">
+  <script src="{{ url_for('static', filename='global-translations.js') }}"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+
+    body {
+      background: url('{{ url_for('static', filename='images/landing-bg.jpg') }}') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #e8ff5a;
+      min-height: 100vh;
+      width: 100vw;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 20px 0;
+    }
+
+    .bg {
+      position: relative;
+      min-height: 100vh;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+    }
+
+    .container {
+      max-width: 1400px;
+      width: 95vw;
+      margin: 20px auto;
+      padding: 40px 32px 50px 32px;
+      border-radius: 32px;
+      background: rgba(255,255,255,0.13);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      border: 1.5px solid rgba(232,255,90,0.18);
+      position: relative;
+      z-index: 1;
+      min-height: fit-content;
+      margin-bottom: 80px;
+      overflow: visible;
+    }
+
+    .standout-heading {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: transparent;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+      filter: drop-shadow(0 0 10px rgba(232, 255, 90, 0.3));
+    }
+
+    .heading-highlight {
+      display: inline-block;
+      width: 60px;
+      height: 6px;
+      background: linear-gradient(45deg, #e8ff5a, #4caf50);
+      border-radius: 3px;
+      margin-bottom: 15px;
+    }
+
+    .heading-gradient {
+      background: linear-gradient(135deg, #e8ff5a 0%, #4caf50 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: inline-block;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.95);
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin-bottom: 30px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      padding: 10px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-link {
+      position: fixed;
+      top: 30px;
+      left: 30px;
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+    }
+
+    .nav-link:hover {
+      background: rgba(232, 255, 90, 0.9);
+      color: #1b2b0a;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(232, 255, 90, 0.3);
+    }
+
+    .input-section {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 25px;
+      padding: 35px;
+      box-shadow: 
+        0 8px 32px rgba(31, 38, 135, 0.2),
+        0 12px 60px rgba(112, 255, 54, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      margin-bottom: 40px;
+      transition: all 0.3s ease;
+    }
+
+    .input-section:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .section-title {
+      font-size: 1.6rem;
+      color: #2e7d32;
+      margin-bottom: 25px;
+      font-weight: 600;
+      text-align: center;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #1b5e20;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.3px solid rgba(232, 255, 90, 0.25);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.85);
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 2px 8px rgba(60, 80, 70, 0.08);
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: #e8ff5a;
+      box-shadow: 0 0 0 3px rgba(232, 255, 90, 0.2), 0 4px 15px rgba(60, 80, 70, 0.12);
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .calculate-btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(45deg, #e8ff5a, #4caf50);
+      color: #1b2b0a;
+      border: 1.3px solid rgba(76, 175, 80, 0.3);
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 4px 15px rgba(60, 80, 70, 0.15);
+    }
+
+    .calculate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(232, 255, 90, 0.4), 0 6px 20px rgba(60, 80, 70, 0.2);
+      background: linear-gradient(45deg, #e8ff5a, #43a047);
+    }
+
+    .results-section {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 25px;
+      padding: 35px;
+      box-shadow: 
+        0 8px 32px rgba(31, 38, 135, 0.2),
+        0 12px 60px rgba(112, 255, 54, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      margin-bottom: 40px;
+      display: none;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.6s ease;
+    }
+
+    .results-section.show {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .results-display {
+      text-align: center;
+    }
+
+    .profit-indicator {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 20px 0;
+      padding: 20px;
+      border-radius: 15px;
+      transition: all 0.5s ease;
+    }
+
+    .profit-positive {
+      color: #2e7d32;
+      background: linear-gradient(135deg, rgba(232, 255, 90, 0.2), rgba(76, 175, 80, 0.1));
+      border: 2px solid rgba(76, 175, 80, 0.3);
+    }
+
+    .profit-negative {
+      color: #d32f2f;
+      background: linear-gradient(135deg, rgba(255, 87, 34, 0.1), rgba(244, 67, 54, 0.1));
+      border: 2px solid rgba(244, 67, 54, 0.3);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .metric-card {
+      background: rgba(255, 255, 255, 0.75);
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      border: 1.3px solid rgba(232, 255, 90, 0.25);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 2px 12px rgba(60, 80, 70, 0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(60, 80, 70, 0.15);
+    }
+
+    .metric-value {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #2e7d32;
+    }
+
+    .metric-label {
+      font-size: 0.9rem;
+      color: #555;
+      margin-top: 5px;
+    }
+
+
+
+    .suggestions-section {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 25px;
+      padding: 35px;
+      margin-top: 40px;
+      box-shadow: 
+        0 8px 32px rgba(31, 38, 135, 0.2),
+        0 12px 60px rgba(112, 255, 54, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.6s ease 0.6s;
+    }
+
+    .suggestions-section.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .suggestion-item {
+      background: rgba(232, 255, 90, 0.15);
+      padding: 15px;
+      border-radius: 12px;
+      margin: 10px 0;
+      border-left: 4px solid #e8ff5a;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(232, 255, 90, 0.2);
+      box-shadow: 0 2px 10px rgba(60, 80, 70, 0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .suggestion-item:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 18px rgba(60, 80, 70, 0.12);
+      background: rgba(232, 255, 90, 0.2);
+    }
+
+    .loan-analysis-section {
+      margin: 30px 0;
+      padding: 25px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      border: 1px solid rgba(232, 255, 90, 0.2);
+      backdrop-filter: blur(10px);
+    }
+
+    .section-subtitle {
+      color: #2e7d32;
+      font-size: 1.4rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .loan-indicator {
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-weight: 600;
+      margin: 10px auto;
+      text-align: center;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .loan-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+    }
+
+    .loan-metric {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 15px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 10px;
+      border: 1px solid rgba(232, 255, 90, 0.2);
+    }
+
+    .loan-label {
+      font-weight: 500;
+      color: #2e7d32;
+    }
+
+    .loan-value {
+      font-weight: 600;
+      color: #1b5e20;
+      font-size: 1.1rem;
+    }
+
+    .suggestion-icon {
+      color: #4caf50;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .roi-indicator {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      margin: 10px 0;
+    }
+
+    .roi-excellent {
+      background: rgba(76, 175, 80, 0.2);
+      color: #2e7d32;
+      border: 1px solid #4caf50;
+    }
+
+    .roi-good {
+      background: rgba(232, 255, 90, 0.3);
+      color: #33691e;
+      border: 1px solid #8bc34a;
+    }
+
+    .roi-poor {
+      background: rgba(255, 152, 0, 0.2);
+      color: #e65100;
+      border: 1px solid #ff9800;
+    }
+
+    .roi-loss {
+      background: rgba(244, 67, 54, 0.2);
+      color: #c62828;
+      border: 1px solid #f44336;
+    }
+
+    @media (max-width: 768px) {
+      .charts-section, .form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .standout-heading {
+        font-size: 2rem;
+      }
+      
+      .nav-link {
+        position: static;
+        display: inline-block;
+        margin-bottom: 20px;
+      }
+      
+      .bg {
+        padding: 30px 15px;
+      }
+      
+      .container {
+        padding: 25px;
+      }
+      
+      .input-section, .results-section, .suggestions-section {
+        padding: 20px;
+      }
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .animate-result {
+      animation: slideInUp 0.6s ease-out;
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .confidence-badge {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .confidence-high {
+      background: rgba(76, 175, 80, 0.2);
+      color: #2e7d32;
+      border: 1px solid #4caf50;
+    }
+
+    .confidence-medium {
+      background: rgba(255, 193, 7, 0.2);
+      color: #f57f17;
+      border: 1px solid #ffc107;
+    }
+
+    .confidence-low {
+      background: rgba(156, 39, 176, 0.2);
+      color: #7b1fa2;
+      border: 1px solid #9c27b0;
+    }
+
+    .price-source-live {
+      color: #2e7d32;
+      font-weight: 600;
+    }
+
+    .price-source-simulated {
+      color: #f57f17;
+      font-weight: 500;
+    }
+
+    .price-source-historical {
+      color: #7b1fa2;
+      font-weight: 500;
+    }
+
+    #allPricesModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 25px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      backdrop-filter: blur(10px);
+    }
+
+    .price-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .price-item {
+      background: rgba(247, 251, 246, 0.8);
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid rgba(232, 255, 90, 0.3);
+      text-align: center;
+    }
+
+    .price-item h4 {
+      color: #2e7d32;
+      margin-bottom: 8px;
+      text-transform: capitalize;
+    }
+
+    .price-value {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #1b5e20;
+      margin-bottom: 5px;
+    }
+
+    .results-section, .suggestions-section {
+      display: none;
+    }
+    .results-section.show, .suggestions-section.show {
+      display: block;
+      animation: fadeIn 0.7s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <a href="{{ url_for('features') }}" class="nav-link">
+    <span data-translate="nav.back">← Back to Features</span>
+  </a>
+
+  <div class="bg">
+    <div class="container">
+      <h2 class="standout-heading">
+        <span class="heading-highlight"></span>
+        <span class="heading-gradient" data-translate="yieldwise.title">YieldWise Calculator</span>
+      </h2>
+      <p class="subtitle" data-translate="yieldwise.subtitle">Calculate your farming profit & loss with precision and get smart recommendations</p>
+    </div>
+      
+    <!-- Input Section -->
+    <div class="container">
+      <div class="input-section">
+        <h2 class="section-title" data-translate="yieldwise.input.title">Farming Inputs</h2>
+        <form id="calculatorForm">
+          <div class="form-grid">
+          
+          <div class="form-group">
+            <label>Crop Type:</label>
+            <select id="cropType" required onchange="handleCropChange()">
+              <option value="">Select Crop</option>
+              <option value="rice">Rice</option>
+              <option value="wheat">Wheat</option>
+              <option value="cotton">Cotton</option>
+              <option value="sugarcane">Sugarcane</option>
+              <option value="soybean">Soybean</option>
+              <option value="groundnut">Groundnut</option>
+              <option value="tomato">Tomato</option>
+              <option value="onion">Onion</option>
+              <option value="potato">Potato</option>
+              <option value="garlic">Garlic</option>
+              <option value="jowar">Jowar</option>
+              <option value="tur">Tur (Pigeon Pea)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label data-translate="yieldwise.area.label">Farm Area (acres):</label>
+            <input type="number" id="farmArea" step="0.1" min="0.1" required>
+          </div>
+
+          <div class="form-group">
+            <label data-translate="yieldwise.yield.label">Expected Yield (quintals/acre):</label>
+            <input type="number" id="expectedYield" step="0.1" min="0.1" required>
+          </div>
+
+          <div class="form-group">
+            <label>Market Price (₹/quintal):</label>
+            <input type="number" id="marketPrice" step="0.01" min="1" required placeholder="Enter market price per quintal">
+          </div>
+
+          <div class="form-group">
+            <label data-translate="yieldwise.seeds.label">Seed Cost (₹):</label>
+            <input type="number" id="seedCost" step="0.01" min="0" required>
+          </div>
+
+          <div class="form-group">
+            <label data-translate="yieldwise.fertilizer.label">Fertilizer Cost (₹):</label>
+            <input type="number" id="fertilizerCost" step="0.01" min="0" required>
+          </div>
+
+          <div class="form-group">
+            <label data-translate="yieldwise.pesticide.label">Pesticide Cost (₹):</label>
+            <input type="number" id="pesticideCost" step="0.01" min="0" required>
+          </div>
+
+          <div class="form-group">
+            <label data-translate="yieldwise.labor.label">Labor Cost (₹):</label>
+            <input type="number" id="laborCost" step="0.01" min="0" required>
+          </div>
+
+          <div class="form-group">
+            <label data-translate="yieldwise.other.label">Other Expenses (₹):</label>
+            <input type="number" id="otherCost" step="0.01" min="0" value="0">
+          </div>
+
+          <div class="form-group">
+            <label data-translate="yieldwise.loan.label">Loan Amount (₹):</label>
+            <input type="number" id="loanAmount" step="0.01" min="0" value="0" placeholder="Enter loan amount if any">
+          </div>
+
+          <div class="form-group">
+            <label data-translate="yieldwise.interest.label">Interest Rate (% per annum):</label>
+            <input type="number" id="interestRate" step="0.1" min="0" max="50" value="0" placeholder="Annual interest rate">
+          </div>
+
+          </div>
+          <button type="button" class="calculate-btn" onclick="handleCalculateClick()" data-translate="yieldwise.calculate">
+            Calculate Profit/Loss
+          </button>
+          
+          <button type="button" class="calculate-btn" onclick="showProfitabilityComparison()" style="background: linear-gradient(45deg, #4caf50, #81c784); margin-top: 10px;">
+            📊 Compare Crop Profitability
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Results Section (Hidden Initially) -->
+    <div class="container results-section" id="resultsSection">
+      <h2 class="section-title" data-translate="yieldwise.results.title">Financial Analysis</h2>
+      <div class="results-display" id="resultsDisplay">
+        <!-- Results will be populated here -->
+      </div>
+    </div>
+
+
+
+    <!-- Suggestions Section -->
+    <div class="container suggestions-section" id="suggestionsSection">
+      <h2 class="section-title" data-translate="yieldwise.suggestions.title">Smart Recommendations</h2>
+      <div id="suggestionsList"></div>
+    </div>
+  </div>
+
+  <!-- Chatbot Widget -->
+  <div class="agri-chatbot-widget" id="chatbot" style="display: none;">
+    <div class="chatbot-header">
+      <div class="bot-icon">
+        <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot Icon">
+      </div>
+      <div class="bot-info">
+        <h3>AgriBot AI</h3>
+        <p>Your farming assistant</p>
+      </div>
+      <div class="status-indicator"></div>
+      <button class="minimize-btn" onclick="toggleChatbot()">−</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="quick-suggestions">
+      <div class="suggestion-chip" onclick="sendMessage('How to reduce farming costs?')">Reduce Costs</div>
+      <div class="suggestion-chip" onclick="sendMessage('Best crops for profit?')">Profitable Crops</div>
+      <div class="suggestion-chip" onclick="sendMessage('Market price trends?')">Price Trends</div>
+    </div>
+    <div class="chat-input-container">
+      <input type="text" id="chatInput" placeholder="Ask about farming profits..." onkeypress="handleEnter(event)">
+      <button onclick="sendMessage()" class="send-btn">Send</button>
+    </div>
+  </div>
+
+  <button class="chatbot-toggle" id="chatbotToggle" onclick="toggleChatbot()" style="display: flex;">
+    <img src="{{ url_for('static', filename='images/icon.png') }}" alt="Chatbot">
+  </button>
+
+  <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+  <script>
+    // Crop data for calculations and suggestions
+    const cropData = {
+      rice: { name: 'Rice', avgYield: 20, avgPrice: 2500, riskFactor: 0.8 },
+      wheat: { name: 'Wheat', avgYield: 15, avgPrice: 2200, riskFactor: 0.7 },
+      cotton: { name: 'Cotton', avgYield: 12, avgPrice: 6000, riskFactor: 0.9 },
+      sugarcane: { name: 'Sugarcane', avgYield: 600, avgPrice: 350, riskFactor: 0.6 },
+      soybean: { name: 'Soybean', avgYield: 14, avgPrice: 4500, riskFactor: 0.8 },
+      groundnut: { name: 'Groundnut', avgYield: 18, avgPrice: 5500, riskFactor: 0.8 },
+      tomato: { name: 'Tomato', avgYield: 250, avgPrice: 1500, riskFactor: 1.2 },
+      onion: { name: 'Onion', avgYield: 200, avgPrice: 2000, riskFactor: 1.0 },
+      potato: { name: 'Potato', avgYield: 180, avgPrice: 1800, riskFactor: 0.9 },
+      garlic: { name: 'Garlic', avgYield: 80, avgPrice: 8000, riskFactor: 1.1 },
+      jowar: { name: 'Jowar', avgYield: 12, avgPrice: 2800, riskFactor: 0.8 },
+      tur: { name: 'Tur (Pigeon Pea)', avgYield: 10, avgPrice: 6500, riskFactor: 0.9 }
+    };
+
+
+
+    function calculateProfitLoss() {
+      console.log('🔄 Starting calculateProfitLoss function...');
+      
+      // Get input values
+      const cropType = document.getElementById('cropType').value;
+      const farmArea = parseFloat(document.getElementById('farmArea').value);
+      const expectedYield = parseFloat(document.getElementById('expectedYield').value);
+      const marketPrice = parseFloat(document.getElementById('marketPrice').value);
+      const seedCost = parseFloat(document.getElementById('seedCost').value);
+      const fertilizerCost = parseFloat(document.getElementById('fertilizerCost').value);
+      const pesticideCost = parseFloat(document.getElementById('pesticideCost').value);
+      const laborCost = parseFloat(document.getElementById('laborCost').value);
+      const otherCost = parseFloat(document.getElementById('otherCost').value) || 0;
+      const loanAmount = parseFloat(document.getElementById('loanAmount').value) || 0;
+      const interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
+
+      console.log('📊 Input values:', {
+        cropType, farmArea, expectedYield, marketPrice, 
+        seedCost, fertilizerCost, pesticideCost, laborCost, 
+        otherCost, loanAmount, interestRate
+      });
+
+      // Calculations
+      const totalProduction = farmArea * expectedYield;
+      const totalRevenue = totalProduction * marketPrice;
+      const operationalCosts = seedCost + fertilizerCost + pesticideCost + laborCost + otherCost;
+      
+      // Loan calculations (assuming 1 year repayment period for crop cycle)
+      const annualInterest = (loanAmount * interestRate) / 100;
+      const totalLoanRepayment = loanAmount + annualInterest;
+      const monthlyEMI = totalLoanRepayment / 12;
+      
+      // Total costs including loan repayment
+      const totalCosts = operationalCosts + totalLoanRepayment;
+      const netProfit = totalRevenue - totalCosts;
+      const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100) : 0;
+      const roi = totalCosts > 0 ? ((netProfit / totalCosts) * 100) : 0;
+      const costPerAcre = totalCosts / farmArea;
+      const revenuePerAcre = totalRevenue / farmArea;
+
+      console.log('💰 Calculated results:', {
+        totalRevenue, totalCosts, netProfit, profitMargin, roi
+      });
+
+      // Display results with animation
+      console.log('📋 About to display results...');
+      displayResults({
+        cropType,
+        farmArea,
+        totalProduction,
+        totalRevenue,
+        operationalCosts,
+        totalCosts,
+        netProfit,
+        profitMargin,
+        roi,
+        costPerAcre,
+        revenuePerAcre,
+        seedCost,
+        fertilizerCost,
+        pesticideCost,
+        laborCost,
+        otherCost,
+        loanAmount,
+        interestRate,
+        annualInterest,
+        totalLoanRepayment,
+        monthlyEMI
+      });
+
+      // Always show results and suggestions
+      const resultsSection = document.getElementById('resultsSection');
+      const suggestionsSection = document.getElementById('suggestionsSection');
+      
+      if (resultsSection) {
+        resultsSection.style.display = 'block';
+        resultsSection.classList.add('show');
+      }
+      
+      if (suggestionsSection) {
+        suggestionsSection.style.display = 'block';
+        suggestionsSection.classList.add('show');
+      }
+      
+      // Scroll to results after a small delay
+      setTimeout(() => {
+        if (resultsSection) {
+          resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 300);
+      
+      console.log('✅ displayResults completed successfully! Results should now be visible.');
+
+      // Generate suggestions with API enhancement
+      generateSuggestions({
+        cropType,
+        netProfit,
+        roi,
+        profitMargin,
+        expectedYield,
+        marketPrice,
+        operationalCosts,
+        totalCosts,
+        farmArea,
+        loanAmount,
+        interestRate,
+        totalLoanRepayment,
+        totalRevenue
+      });
+
+      // Fetch additional smart recommendations from API
+      fetchSmartRecommendations({
+        crop: cropType,
+        profit: netProfit,
+        roi: roi,
+        farm_area: farmArea,
+        total_cost: totalCosts
+      });
+    }
+
+    function displayResults(data) {
+      console.log('🎯 displayResults called with data:', data);
+      const resultsDisplay = document.getElementById('resultsDisplay');
+      console.log('📍 resultsDisplay element:', resultsDisplay);
+      const profitClass = data.netProfit >= 0 ? 'profit-positive' : 'profit-negative';
+      const profitText = data.netProfit >= 0 ? 'Net Profit' : 'Net Loss';
+      
+      let roiClass = 'roi-loss';
+      let roiText = 'High Risk';
+      if (data.roi > 30) {
+        roiClass = 'roi-excellent';
+        roiText = 'Excellent ROI';
+      } else if (data.roi > 15) {
+        roiClass = 'roi-good';
+        roiText = 'Good ROI';
+      } else if (data.roi > 0) {
+        roiClass = 'roi-poor';
+        roiText = 'Low ROI';
+      }
+
+      // Create loan analysis section
+      let loanAnalysis = '';
+      if (data.loanAmount > 0) {
+        const loanAffordability = data.totalRevenue >= data.totalLoanRepayment ? 'Affordable' : 'Risk Alert';
+        const affordabilityClass = data.totalRevenue >= data.totalLoanRepayment ? 'roi-good' : 'roi-loss';
+        
+        loanAnalysis = `
+          <div class="loan-analysis-section">
+            <h3 class="section-subtitle">Loan Analysis</h3>
+            <div class="loan-indicator ${affordabilityClass}">
+              ${loanAffordability}: Loan Repayment Capacity
+            </div>
+            <div class="loan-metrics">
+              <div class="loan-metric">
+                <span class="loan-label">Loan Amount:</span>
+                <span class="loan-value">₹${data.loanAmount.toLocaleString('en-IN')}</span>
+              </div>
+              <div class="loan-metric">
+                <span class="loan-label">Interest Rate:</span>
+                <span class="loan-value">${data.interestRate}% per annum</span>
+              </div>
+              <div class="loan-metric">
+                <span class="loan-label">Annual Interest:</span>
+                <span class="loan-value">₹${data.annualInterest.toLocaleString('en-IN')}</span>
+              </div>
+              <div class="loan-metric">
+                <span class="loan-label">Total Repayment:</span>
+                <span class="loan-value">₹${data.totalLoanRepayment.toLocaleString('en-IN')}</span>
+              </div>
+              <div class="loan-metric">
+                <span class="loan-label">Monthly EMI:</span>
+                <span class="loan-value">₹${data.monthlyEMI.toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      resultsDisplay.innerHTML = `
+        <div class="profit-indicator ${profitClass} animate-result">
+          ${profitText}: ₹${Math.abs(data.netProfit).toLocaleString('en-IN')}
+        </div>
+        
+        <div class="roi-indicator ${roiClass}">
+          ${roiText}: ${data.roi.toFixed(1)}%
+        </div>
+        
+        ${loanAnalysis}
+        
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-value">₹${data.totalRevenue.toLocaleString('en-IN')}</div>
+            <div class="metric-label">Total Revenue</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">₹${data.operationalCosts.toLocaleString('en-IN')}</div>
+            <div class="metric-label">Operational Costs</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">₹${data.totalCosts.toLocaleString('en-IN')}</div>
+            <div class="metric-label">Total Costs (Inc. Loan)</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">${data.totalProduction.toFixed(1)} Qt</div>
+            <div class="metric-label">Production</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">${data.profitMargin.toFixed(1)}%</div>
+            <div class="metric-label">Profit Margin</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">₹${data.costPerAcre.toLocaleString('en-IN')}</div>
+            <div class="metric-label">Cost/Acre</div>
+          </div>
+        </div>
+      `;
+    }
+
+
+
+    function generateSuggestions(data) {
+      const suggestions = [];
+      const cropInfo = cropData[data.cropType];
+
+      // Loan-specific suggestions
+      if (data.loanAmount > 0) {
+        const loanToRevenueRatio = (data.totalLoanRepayment / data.totalRevenue) * 100;
+        
+        if (data.totalRevenue < data.totalLoanRepayment) {
+          suggestions.push({
+            icon: '🚨',
+            text: 'Critical: Your revenue may not cover loan repayment. Consider crop insurance or alternative income sources.',
+            type: 'critical'
+          });
+        } else if (loanToRevenueRatio > 70) {
+          suggestions.push({
+            icon: '⚠️',
+            text: 'High loan burden detected. Consider extending loan tenure or reducing interest rate through government schemes.',
+            type: 'warning'
+          });
+        } else if (loanToRevenueRatio < 30) {
+          suggestions.push({
+            icon: '💚',
+            text: 'Good loan management! Your loan repayment is well within manageable limits.',
+            type: 'success'
+          });
+        }
+
+        if (data.interestRate > 12) {
+          suggestions.push({
+            icon: '💰',
+            text: 'High interest rate detected. Explore government subsidized loans or KCC (Kisan Credit Card) for better rates.',
+            type: 'improvement'
+          });
+        }
+      }
+
+      // ROI-based suggestions
+      if (data.roi < 0) {
+        suggestions.push({
+          icon: '⚠️',
+          text: 'Consider switching to more profitable crops or reducing input costs by 15-20%.',
+          type: 'critical'
+        });
+      } else if (data.roi < 15) {
+        suggestions.push({
+          icon: '💡',
+          text: 'Try to optimize fertilizer usage and explore bulk purchasing to reduce costs.',
+          type: 'improvement'
+        });
+      } else if (data.roi > 30) {
+        suggestions.push({
+          icon: '🎉',
+          text: 'Excellent returns! Consider expanding cultivation area for this crop.',
+          type: 'success'
+        });
+      }
+
+      // Yield comparison
+      if (cropInfo && data.expectedYield < cropInfo.avgYield * 0.8) {
+        suggestions.push({
+          icon: '🌱',
+          text: `Your expected yield is below average. Consider using high-yield varieties or improving soil health.`,
+          type: 'improvement'
+        });
+      }
+
+      // Price comparison
+      if (cropInfo && data.marketPrice < cropInfo.avgPrice * 0.9) {
+        suggestions.push({
+          icon: '💰',
+          text: 'Market price seems low. Consider direct marketing or value addition to increase profits.',
+          type: 'improvement'
+        });
+      }
+
+      // Cost optimization
+      const highestOperationalCost = Math.max(data.seedCost, data.fertilizerCost, data.pesticideCost, data.laborCost);
+      if (data.laborCost === highestOperationalCost && data.laborCost > data.operationalCosts * 0.4) {
+        suggestions.push({
+          icon: '🤖',
+          text: 'Labor costs are high. Consider mechanization or efficient labor management.',
+          type: 'improvement'
+        });
+      }
+
+      if (data.fertilizerCost === highestOperationalCost && data.fertilizerCost > data.operationalCosts * 0.3) {
+        suggestions.push({
+          icon: '🧪',
+          text: 'Consider soil testing to optimize fertilizer usage and reduce unnecessary costs.',
+          type: 'improvement'
+        });
+      }
+
+      // Financial planning suggestions
+      if (data.loanAmount > 0 && data.netProfit > 0) {
+        suggestions.push({
+          icon: '📈',
+          text: 'Consider reinvesting profits to reduce dependency on loans for next crop cycle.',
+          type: 'improvement'
+        });
+      }
+
+      if (data.loanAmount === 0 && data.netProfit > 50000) {
+        suggestions.push({
+          icon: '💎',
+          text: 'Strong financial position! Consider investing in farm infrastructure or diversification.',
+          type: 'success'
+        });
+      }
+
+      // Scale suggestions
+      if (data.farmArea < 2) {
+        suggestions.push({
+          icon: '📈',
+          text: 'Small farm size may limit profits. Consider contract farming or cooperative cultivation.',
+          type: 'improvement'
+        });
+      }
+
+      // Risk management
+      if (cropInfo && cropInfo.riskFactor > 1.0) {
+        suggestions.push({
+          icon: '🛡️',
+          text: 'This crop has higher market volatility. Consider crop insurance and diversification.',
+          type: 'warning'
+        });
+      }
+
+      // Display suggestions
+      const suggestionsList = document.getElementById('suggestionsList');
+      suggestionsList.innerHTML = suggestions.map(suggestion => `
+        <div class="suggestion-item">
+          <span class="suggestion-icon">${suggestion.icon}</span>
+          ${suggestion.text}
+        </div>
+      `).join('');
+    }
+
+    // Fetch additional smart recommendations from API
+    async function fetchSmartRecommendations(params) {
+      try {
+        console.log('🧠 Fetching smart recommendations from API...');
+        
+        const queryString = new URLSearchParams(params).toString();
+        const response = await fetch(`/api/yieldwise/recommendations?${queryString}`);
+        const data = await response.json();
+        
+        if (data.success && data.recommendations.length > 0) {
+          console.log('✅ Smart recommendations fetched successfully');
+          
+          // Add API recommendations to the suggestions list
+          const suggestionsList = document.getElementById('suggestionsList');
+          const apiSuggestions = data.recommendations.map(rec => `
+            <div class="suggestion-item" style="border-left-color: ${getPriorityColor(rec.priority)}">
+              <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                <span class="suggestion-icon">${rec.icon}</span>
+                <strong style="color: #2e7d32; margin-left: 8px;">${rec.title}</strong>
+                <span style="margin-left: auto; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; background: ${getPriorityBg(rec.priority)}; color: ${getPriorityColor(rec.priority)};">
+                  ${rec.priority.toUpperCase()}
+                </span>
+              </div>
+              <div style="color: #555; font-size: 0.9rem; margin-left: 28px;">
+                ${rec.description}
+              </div>
+            </div>
+          `).join('');
+          
+          // Add separator and API suggestions
+          suggestionsList.innerHTML += `
+            <div style="margin: 20px 0; text-align: center; color: #666; font-size: 0.9rem; font-weight: 600;">
+              🤖 AI-Powered Smart Recommendations
+            </div>
+            ${apiSuggestions}
+          `;
+        }
+      } catch (error) {
+        console.error('❌ Error fetching smart recommendations:', error);
+      }
+    }
+
+    function getPriorityColor(priority) {
+      switch(priority) {
+        case 'high': return '#d32f2f';
+        case 'medium': return '#f57c00';
+        case 'low': return '#2e7d32';
+        default: return '#1976d2';
+      }
+    }
+
+    function getPriorityBg(priority) {
+      switch(priority) {
+        case 'high': return 'rgba(211, 47, 47, 0.1)';
+        case 'medium': return 'rgba(245, 124, 0, 0.1)';
+        case 'low': return 'rgba(46, 125, 50, 0.1)';
+        default: return 'rgba(25, 118, 210, 0.1)';
+      }
+    }
+
+    // Location and market data functions
+    let currentLocationData = null;
+
+    // Using existing cropData from above
+
+    // Auto-fill yield and price when crop is selected
+    function handleCropChange() {
+      const cropType = document.getElementById('cropType').value;
+      if (cropType && cropData[cropType]) {
+        const crop = cropData[cropType];
+        document.getElementById('expectedYield').value = crop.avgYield;
+        
+        // Fetch real-time market price from API
+        fetchMarketPrice(cropType);
+        
+        console.log(`🌾 Auto-filled data for ${crop.name}: Yield=${crop.avgYield}`);
+      }
+    }
+
+    // Fetch real-time market price from API
+    async function fetchMarketPrice(crop) {
+      try {
+        console.log(`📊 Fetching market price for ${crop}...`);
+        const response = await fetch(`/api/yieldwise/market-price/${crop}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          const priceInput = document.getElementById('marketPrice');
+          priceInput.value = data.price;
+          
+          // Show price insights
+          showPriceInsights(data);
+          
+          console.log(`✅ Market price fetched: ₹${data.price}/quintal from ${data.market}`);
+        } else {
+          console.warn('⚠️ Failed to fetch market price, using default');
+          // Fallback to default price
+          if (cropData[crop]) {
+            document.getElementById('marketPrice').value = cropData[crop].avgPrice;
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error fetching market price:', error);
+        // Fallback to default price
+        if (cropData[crop]) {
+          document.getElementById('marketPrice').value = cropData[crop].avgPrice;
+        }
+      }
+    }
+
+    // Show price insights near the market price input
+    function showPriceInsights(data) {
+      const priceInput = document.getElementById('marketPrice');
+      let insightsDiv = document.getElementById('priceInsights');
+      
+      if (!insightsDiv) {
+        insightsDiv = document.createElement('div');
+        insightsDiv.id = 'priceInsights';
+        insightsDiv.style.cssText = `
+          margin-top: 8px;
+          padding: 10px;
+          border-radius: 8px;
+          font-size: 0.85rem;
+          border: 1px solid rgba(232, 255, 90, 0.3);
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(5px);
+        `;
+        priceInput.parentNode.appendChild(insightsDiv);
+      }
+      
+      const insights = data.insights;
+      const trendColor = insights.color === 'green' ? '#2e7d32' : 
+                        insights.color === 'red' ? '#d32f2f' : 
+                        insights.color === 'orange' ? '#f57c00' : '#1976d2';
+      
+      insightsDiv.innerHTML = `
+        <div style="color: ${trendColor}; font-weight: 600; margin-bottom: 5px;">
+          📈 ${insights.trend} (${insights.variance_percent > 0 ? '+' : ''}${insights.variance_percent}%)
+        </div>
+        <div style="color: #555; font-size: 0.8rem;">
+          💡 ${insights.recommendation}
+        </div>
+        <div style="color: #666; font-size: 0.75rem; margin-top: 5px;">
+          📍 ${data.location} • ${data.date} • Confidence: ${data.confidence}
+        </div>
+      `;
+    }
+
+    // Initialize page on load
+    function initializePage() {
+      console.log('🌾 Initializing YieldWise Calculator...');
+      // Add event listener for crop selection
+      const cropSelect = document.getElementById('cropType');
+      if (cropSelect) {
+        cropSelect.addEventListener('change', handleCropChange);
+        console.log('✅ Crop change handler attached');
+      }
+    }
+    
+    function showSuitabilityInfo(data) {
+      // Create or update suitability display
+      let suitabilityDiv = document.getElementById('suitabilityInfo');
+      if (!suitabilityDiv) {
+        suitabilityDiv = document.createElement('div');
+        suitabilityDiv.id = 'suitabilityInfo';
+        suitabilityDiv.style.cssText = `
+          margin-top: 10px;
+          padding: 12px;
+          border-radius: 8px;
+          font-size: 0.9rem;
+          border: 1px solid rgba(76, 175, 80, 0.3);
+        `;
+        document.getElementById('cropType').parentNode.appendChild(suitabilityDiv);
+      }
+      
+      const suitability = data.suitability;
+      let bgColor, textColor, icon;
+      
+      if (suitability.includes('Highly Suitable')) {
+        bgColor = 'rgba(76, 175, 80, 0.1)';
+        textColor = '#2e7d32';
+        icon = '🌟';
+      } else if (suitability.includes('Moderately Suitable')) {
+        bgColor = 'rgba(255, 193, 7, 0.1)';
+        textColor = '#f57c00';
+        icon = '⚠️';
+      } else {
+        bgColor = 'rgba(244, 67, 54, 0.1)';
+        textColor = '#d32f2f';
+        icon = '❌';
+      }
+      
+      suitabilityDiv.style.backgroundColor = bgColor;
+      suitabilityDiv.style.color = textColor;
+      suitabilityDiv.innerHTML = `
+        <strong>${icon} Crop Suitability:</strong> ${suitability}<br>
+        <small>📍 ${data.location.village}, ${data.location.block}, ${data.location.district}</small>
+      `;
+    }
+    
+    function autoAdjustYield(suitability) {
+      const yieldInput = document.getElementById('expectedYield');
+      const currentValue = parseFloat(yieldInput.value) || 0;
+      
+      // Don't override if user has already entered a value
+      if (currentValue > 0) return;
+      
+      // Set default yields based on suitability
+      const cropType = document.getElementById('cropType').value;
+      const defaultYields = {
+        'rice': { high: 25, moderate: 20, low: 15 },
+        'wheat': { high: 20, moderate: 15, low: 10 },
+        'cotton': { high: 15, moderate: 12, low: 8 },
+        'sugarcane': { high: 800, moderate: 600, low: 400 },
+        'soyabean': { high: 18, moderate: 14, low: 10 },
+        'groundnut': { high: 20, moderate: 15, low: 10 },
+        'onion': { high: 300, moderate: 250, low: 200 },
+        'tomato': { high: 400, moderate: 300, low: 200 },
+        'potato': { high: 250, moderate: 200, low: 150 },
+        'garlic': { high: 80, moderate: 60, low: 40 },
+        'jowar': { high: 18, moderate: 14, low: 10 },
+        'tur': { high: 12, moderate: 9, low: 6 }
+      };
+      
+      const yields = defaultYields[cropType];
+      if (!yields) return;
+      
+      let suggestedYield;
+      if (suitability.includes('Highly Suitable')) {
+        suggestedYield = yields.high;
+      } else if (suitability.includes('Moderately Suitable')) {
+        suggestedYield = yields.moderate;
+      } else {
+        suggestedYield = yields.low;
+      }
+      
+      yieldInput.value = suggestedYield;
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚀 YieldWise calculator loaded - simple version');
+      
+      // Initialize global translation system
+      if (typeof GlobalTranslationSystem !== 'undefined') {
+        const translationSystem = new GlobalTranslationSystem();
+        translationSystem.initialize();
+        console.log('✅ Global translation system initialized for YieldWise page');
+      }
+      
+      // Initialize simple calculator
+      initializePage();
+      
+      // Add form submission handler (backup prevention)
+      const calculatorForm = document.getElementById('calculatorForm');
+      if (calculatorForm) {
+        calculatorForm.addEventListener('submit', function(e) {
+          e.preventDefault(); // Prevent form reset
+          e.stopPropagation(); // Stop event bubbling
+          return false; // Additional prevention of form submission
+        });
+        console.log('✅ Form event listener attached');
+      } else {
+        console.error('❌ Calculator form not found!');
+      }
+      
+      console.log('✅ Enhanced calculator ready with API integration');
+    });
+
+    // Handle calculate button click
+    function handleCalculateClick() {
+      console.log('📊 Calculate button clicked - processing...');
+      
+      // Validate required fields
+      const requiredFields = ['cropType', 'farmArea', 'expectedYield', 'marketPrice', 'seedCost', 'fertilizerCost', 'pesticideCost', 'laborCost'];
+      const missingFields = [];
+      
+      for (const fieldId of requiredFields) {
+        const field = document.getElementById(fieldId);
+        if (!field || !field.value || field.value.trim() === '') {
+          missingFields.push(fieldId);
+        }
+      }
+      
+      if (missingFields.length > 0) {
+        console.warn('❌ Missing required fields:', missingFields);
+        alert('Please fill in all required fields: ' + missingFields.map(f => f.replace(/([A-Z])/g, ' $1').toLowerCase()).join(', '));
+        return;
+      }
+      
+      try {
+        calculateProfitLoss();
+        console.log('✅ Calculation completed successfully');
+      } catch (error) {
+        console.error('❌ Error during calculation:', error);
+        alert('Error during calculation. Please check your inputs and try again.');
+      }
+    }
+
+    // Profitability comparison functionality
+    async function showProfitabilityComparison() {
+      const farmArea = parseFloat(document.getElementById('farmArea').value) || 5;
+      
+      try {
+        console.log('📊 Fetching crop profitability analysis...');
+        
+        const response = await fetch(`/api/yieldwise/profitability-analysis?farm_size=${farmArea}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          displayProfitabilityComparison(data);
+        } else {
+          alert('Failed to fetch profitability data. Please try again.');
+        }
+      } catch (error) {
+        console.error('❌ Error fetching profitability data:', error);
+        alert('Error fetching data. Please check your connection and try again.');
+      }
+    }
+
+    function displayProfitabilityComparison(data) {
+      // Create modal if it doesn't exist
+      let modal = document.getElementById('profitabilityModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'profitabilityModal';
+        modal.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(76, 175, 80, 0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          backdrop-filter: blur(8px);
+        `;
+        document.body.appendChild(modal);
+      }
+
+      modal.innerHTML = `
+        <div style="
+          background: linear-gradient(135deg, #f8fffe 0%, #e8f5e8 100%);
+          border-radius: 20px;
+          padding: 30px;
+          max-width: 900px;
+          width: 90%;
+          max-height: 80vh;
+          overflow-y: auto;
+          backdrop-filter: blur(10px);
+          box-shadow: 0 12px 40px rgba(76, 175, 80, 0.25);
+          border: 2px solid rgba(76, 175, 80, 0.2);
+        ">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h2 style="color: #2e7d32; margin: 0;">📊 Crop Profitability Analysis</h2>
+            <button onclick="closeProfitabilityModal()" style="
+              background: rgba(76, 175, 80, 0.1);
+              border: 2px solid rgba(76, 175, 80, 0.2);
+              border-radius: 50%;
+              font-size: 1.5rem;
+              cursor: pointer;
+              color: #2e7d32;
+              padding: 8px 12px;
+              width: 40px;
+              height: 40px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              transition: all 0.3s ease;
+            " onmouseover="this.style.background='rgba(76, 175, 80, 0.2)'; this.style.transform='rotate(90deg)'; this.style.boxShadow='0 4px 15px rgba(76, 175, 80, 0.3)';" onmouseout="this.style.background='rgba(76, 175, 80, 0.1)'; this.style.transform='rotate(0deg)'; this.style.boxShadow='none';">×</button>
+          </div>
+          
+          <div style="margin-bottom: 20px; padding: 15px; background: rgba(76, 175, 80, 0.1); border-radius: 10px; border-left: 4px solid #4CAF50;">
+            <strong style="color: #2e7d32;">📍 Analysis for:</strong> ${data.location} | 
+            <strong style="color: #2e7d32;">🌾 Farm Size:</strong> ${data.farm_size} acres | 
+            <strong style="color: #2e7d32;">📅 Date:</strong> ${data.analysis_date}
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+            ${data.crops.map((crop, index) => `
+              <div style="
+                border: 2px solid ${index === 0 ? '#66bb6a' : '#4caf50'};
+                border-radius: 15px;
+                padding: 20px;
+                background: ${index === 0 ? 'linear-gradient(135deg, #2e7d32, #1b5e20)' : 'linear-gradient(135deg, #4caf50, #2e7d32)'};
+                position: relative;
+                box-shadow: ${index === 0 ? '0 8px 32px rgba(76, 175, 80, 0.3)' : '0 4px 20px rgba(76, 175, 80, 0.2)'};
+                transition: all 0.3s ease;
+                color: #e8ff5a;
+              ">
+                ${index === 0 ? '<div style="position: absolute; top: -10px; right: 10px; background: linear-gradient(135deg, #4CAF50, #2e7d32); color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4); border: 1px solid rgba(255, 255, 255, 0.2);">MOST PROFITABLE</div>' : ''}
+                
+                <h3 style="color: #e8ff5a; margin: 0 0 15px 0; text-transform: capitalize; font-weight: 700;">
+                  ${crop.crop_name}
+                </h3>
+                
+                <div style="margin-bottom: 15px;">
+                  <div style="font-size: 1.8rem; font-weight: 800; color: ${crop.estimated_profit >= 0 ? '#e8ff5a' : '#ffcdd2'};">
+                    ${crop.estimated_profit >= 0 ? '+' : ''}₹${crop.estimated_profit.toLocaleString('en-IN')}
+                  </div>
+                  <div style="font-size: 0.9rem; color: rgba(232, 255, 90, 0.8); font-weight: 500;">Estimated Profit</div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.85rem; color: #e8ff5a;">
+                  <div>
+                    <strong style="color: #e8ff5a;">ROI:</strong> <span style="color: #e8ff5a;">${crop.roi}%</span>
+                  </div>
+                  <div>
+                    <strong style="color: #e8ff5a;">Risk:</strong> <span style="color: #e8ff5a;">${crop.risk_factor}</span>
+                  </div>
+                  <div>
+                    <strong style="color: #e8ff5a;">Revenue:</strong> <span style="color: #e8ff5a;">₹${crop.total_revenue.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div>
+                    <strong style="color: #e8ff5a;">Cost:</strong> <span style="color: #e8ff5a;">₹${crop.total_cost.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div>
+                    <strong style="color: #e8ff5a;">Yield:</strong> <span style="color: #e8ff5a;">${crop.expected_yield} Qt/acre</span>
+                  </div>
+                  <div>
+                    <strong style="color: #e8ff5a;">Price:</strong> <span style="color: #e8ff5a;">₹${crop.current_price}/Qt</span>
+                  </div>
+                </div>
+                
+                <button onclick="applyCropData('${crop.crop}')" style="
+                  width: 100%;
+                  margin-top: 15px;
+                  padding: 12px 24px;
+                  background: linear-gradient(135deg, #e8ff5a, #cddc39);
+                  border: none;
+                  border-radius: 25px;
+                  font-weight: 700;
+                  cursor: pointer;
+                  color: #1b5e20;
+                  text-transform: uppercase;
+                  letter-spacing: 0.5px;
+                  font-size: 14px;
+                  box-shadow: 0 4px 15px rgba(232, 255, 90, 0.4);
+                  transition: all 0.3s ease;
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(232, 255, 90, 0.6)'; this.style.background='linear-gradient(135deg, #f4ff81, #e8ff5a)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(232, 255, 90, 0.4)'; this.style.background='linear-gradient(135deg, #e8ff5a, #cddc39)';"
+                  Use This Crop
+                </button>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div style="margin-top: 25px; padding: 15px; background: rgba(76, 175, 80, 0.1); border-radius: 10px; border-left: 4px solid #4CAF50;">
+            <h4 style="color: #2e7d32; margin: 0 0 10px 0;">📈 Market Conditions</h4>
+            <div style="font-size: 0.9rem; color: #555;">
+              <strong style="color: #2e7d32;">Overall Trend:</strong> ${data.market_conditions.overall_trend} | 
+              <strong style="color: #2e7d32;">Demand:</strong> ${data.market_conditions.demand} | 
+              <strong style="color: #2e7d32;">Supply:</strong> ${data.market_conditions.supply}
+            </div>
+          </div>
+        </div>
+      `;
+
+      modal.style.display = 'flex';
+    }
+
+    function closeProfitabilityModal() {
+      const modal = document.getElementById('profitabilityModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    function applyCropData(crop) {
+      // Apply selected crop data to the form
+      document.getElementById('cropType').value = crop;
+      handleCropChange(); // This will auto-fill yield and price
+      closeProfitabilityModal();
+      
+      // Scroll to form
+      document.getElementById('calculatorForm').scrollIntoView({ behavior: 'smooth' });
+      
+      console.log(`✅ Applied crop data: ${crop}`);
+    }
+  </script>
+</body>
+</html>
